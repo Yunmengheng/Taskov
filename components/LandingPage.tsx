@@ -2,7 +2,8 @@ import React from 'react';
 import Link  from 'next/link';
 import { CheckCircleIcon, ArrowRightIcon, CheckSquareIcon, ClockIcon, BarChart3Icon, CalendarIcon, TagIcon, KanbanIcon, UsersIcon, MessageSquareIcon } from 'lucide-react';
 const LandingPage: React.FC = () => {
-  return <div className="min-h-screen bg-white">
+  return (
+    <div className="min-h-screen w-screen flex flex-col bg-white">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,23 +18,23 @@ const LandingPage: React.FC = () => {
               <Link href="/Login" className="text-gray-700 hover:text-blue-600 font-medium">
                 Sign In
               </Link>
-              <Link href="/Login" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300">
+              <Link href="/Signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300">
                 Get Started
               </Link>
             </div>
           </div>
         </div>
       </header>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 py-20">
+  {/* Hero Section (full remaining viewport height) */}
+  <section className="bg-gradient-to-r from-blue-50 to-indigo-50 py-6 md:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            <div className="md:w-1/2 mb-6 md:mb-0">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                 Manage Your Tasks <br />
                 <span className="text-blue-600">Simply & Effectively</span>
               </h1>
-              <p className="text-lg text-gray-700 mb-8 max-w-lg">
+              <p className="text-lg text-gray-700 mb-6 max-w-lg">
                 An intuitive task management platform that helps you organize,
                 prioritize, and complete your tasks with ease.
               </p>
@@ -389,6 +390,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
 export default LandingPage;
