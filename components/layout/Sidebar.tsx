@@ -39,7 +39,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
     },
     {
       icon: <CheckSquare size={20} />,
-      label: "Tasks",
+      label: "Task Board",
+      href: "/KanbanView",
+      active: pathname === "/KanbanView"
+    },
+    {
+      icon: <CheckSquare size={20} />,
+      label: "List View",
       href: "/tasks",
       active: pathname === "/tasks"
     },
@@ -48,12 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
       label: "Calendar",
       href: "/calendar",
       active: pathname === "/calendar"
-    },
-    {
-      icon: <FileText size={20} />,
-      label: "Notes",
-      href: "/notes", 
-      active: pathname === "/notes"
     },
     {
       icon: <BarChart3 size={20} />,
