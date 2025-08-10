@@ -46,29 +46,29 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-lg bg-white dark:bg-zinc-900 p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-xl border border-white/10 bg-zinc-900 p-6 shadow-xl text-white">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{isEdit ? "Edit Task" : "New Task"}</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
+          <h3 className="text-lg font-semibold">{isEdit ? "Edit Task" : "New Task"}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded border px-3 py-2 bg-transparent" />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded border px-3 py-2 bg-transparent" rows={3} />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={3} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">Due date</label>
-              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded border px-3 py-2 bg-transparent" />
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Priority</label>
-              <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full rounded border px-3 py-2 bg-transparent">
+              <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
@@ -76,8 +76,8 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded border">Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">{isEdit ? "Save" : "Create"}</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded border border-white/10">Cancel</button>
+            <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">{isEdit ? "Save" : "Create"}</button>
           </div>
         </form>
       </div>

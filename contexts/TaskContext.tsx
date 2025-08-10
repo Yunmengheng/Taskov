@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type Priority = "low" | "medium" | "high";
+export type Category = "work" | "personal" | "study";
 
 export type Task = {
   id: string;
@@ -12,6 +13,7 @@ export type Task = {
   createdAt: string; // ISO string
   dueDate?: string | null; // ISO string or null
   priority?: Priority;
+  category?: Category;
 };
 
 type TaskInput = {
@@ -19,6 +21,7 @@ type TaskInput = {
   description?: string;
   dueDate?: string | null;
   priority?: Priority;
+  category?: Category;
 };
 
 type TaskContextValue = {
@@ -26,6 +29,7 @@ type TaskContextValue = {
   addTask: (input: TaskInput) => Task;
   updateTask: (id: string, updates: Partial<Omit<Task, "id" | "createdAt">>) => void;
   toggleComplete: (id: string) => void;
+  toggleTaskCompletion: (id: string) => void; // alias for compatibility
   deleteTask: (id: string) => void;
   clearAll: () => void;
 };
@@ -69,6 +73,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: now,
       dueDate: input.dueDate || null,
       priority: input.priority || "medium",
+  category: input.category,
     };
     setTasks((prev) => [task, ...prev]);
     return task;
@@ -95,8 +100,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAll = () => setTasks([]);
 
+  const toggleTaskCompletion = toggleComplete; // alias for existing pages/components
+
   const value = useMemo(
-    () => ({ tasks, addTask, updateTask, toggleComplete, deleteTask, clearAll }),
+    () => ({ tasks, addTask, updateTask, toggleComplete, toggleTaskCompletion, deleteTask, clearAll }),
     [tasks]
   );
 

@@ -1,0 +1,139 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  LayoutDashboard, 
+  CheckSquare, 
+  Calendar,
+  FileText,
+  BarChart3,
+  Settings,
+  Menu,
+  LogOut
+} from "lucide-react";
+
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    router.push('/Login');
+  };
+
+  const menuItems = [
+    {
+      icon: <LayoutDashboard size={20} />,
+      label: "Dashboard",
+      href: "/Dashboard",
+      active: pathname === "/Dashboard"
+    },
+    {
+      icon: <CheckSquare size={20} />,
+      label: "Tasks",
+      href: "/tasks",
+      active: pathname === "/tasks"
+    },
+    {
+      icon: <Calendar size={20} />,
+      label: "Calendar",
+      href: "/calendar",
+      active: pathname === "/calendar"
+    },
+    {
+      icon: <FileText size={20} />,
+      label: "Notes",
+      href: "/notes", 
+      active: pathname === "/notes"
+    },
+    {
+      icon: <BarChart3 size={20} />,
+      label: "Analytics",
+      href: "/analytics",
+      active: pathname === "/analytics"
+    },
+    {
+      icon: <Settings size={20} />,
+      label: "Settings",
+      href: "/settings",
+      active: pathname === "/settings"
+    }
+  ];
+
+  return (
+    <div className="fixed left-0 top-0 h-full z-50 group">
+      {/* Sidebar - starts narrow with icons only, expands on hover */}
+      <div className="bg-slate-800 border-r border-slate-700 h-full transition-all duration-300 ease-in-out w-16 group-hover:w-64 shadow-lg flex flex-col">
+        {/* Sidebar content */}
+        <div className="p-4 flex-1">
+          {/* Menu items */}
+          <nav className="space-y-2 mt-6">
+            {menuItems.map((item) => (
+              <div key={item.href} className="relative group/tooltip">
+                <Link
+                  href={item.href}
+                  className={`flex items-center px-3 py-3 rounded-lg transition-colors relative ${
+                    item.active
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-400 hover:text-white hover:bg-slate-700"
+                  }`}
+                >
+                  {/* Icon - always visible */}
+                  <span className="flex-shrink-0 z-10">{item.icon}</span>
+                  
+                  {/* Label - hidden by default, appears on sidebar hover */}
+                  <span className="ml-3 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 overflow-hidden w-0 group-hover:w-auto">
+                    {item.label}
+                  </span>
+                </Link>
+                
+                {/* Tooltip for collapsed state */}
+                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-700 text-white text-sm rounded-lg opacity-0 group/tooltip-hover:opacity-100 group-hover:opacity-0 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none shadow-lg border border-slate-600">
+                  {item.label}
+                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-700 border-l border-b border-slate-600 rotate-45"></div>
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* Logout button at bottom */}
+        <div className="p-4 border-t border-slate-700">
+          <div className="relative group/tooltip">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center px-3 py-3 rounded-lg transition-colors w-full text-gray-400 hover:text-white hover:bg-red-600/20 hover:border-red-500/30"
+            >
+              {/* Icon - always visible */}
+              <span className="flex-shrink-0 z-10">
+                <LogOut size={20} />
+              </span>
+              
+              {/* Label - hidden by default, appears on sidebar hover */}
+              <span className="ml-3 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 overflow-hidden w-0 group-hover:w-auto">
+                Sign Out
+              </span>
+            </button>
+            
+            {/* Tooltip for collapsed state */}
+            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-700 text-white text-sm rounded-lg opacity-0 group/tooltip-hover:opacity-100 group-hover:opacity-0 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none shadow-lg border border-slate-600">
+              Sign Out
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-700 border-l border-b border-slate-600 rotate-45"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
