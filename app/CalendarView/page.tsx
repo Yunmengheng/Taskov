@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 interface CalendarEvent {
   id: string;
@@ -55,7 +56,7 @@ const CalendarView: React.FC = () => {
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(
-        <div key={`empty-${i}`} className="h-20 bg-slate-700"></div>
+        <div key={`empty-${i}`} className="h-24 bg-slate-700 border border-slate-600"></div>
       );
     }
 
@@ -66,16 +67,16 @@ const CalendarView: React.FC = () => {
       days.push(
         <div
           key={day}
-          className="h-20 bg-slate-700 p-2 border-r border-b border-slate-600 relative"
+          className="h-24 bg-slate-700 border border-slate-600 p-2 relative"
         >
-          <div className="text-xs text-slate-300 font-medium">
+          <div className="text-sm text-slate-300 font-medium mb-1">
             {day}
           </div>
-          <div className="mt-1">
+          <div className="space-y-1">
             {dayEvents.map(event => (
               <div
                 key={event.id}
-                className="text-xs px-1 py-0.5 bg-slate-600 text-slate-300 rounded text-center"
+                className="text-xs px-2 py-1 bg-slate-600 text-slate-300 rounded"
               >
                 {event.title}
               </div>
@@ -89,44 +90,22 @@ const CalendarView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-800">
-      {/* Header */}
-      <div className="bg-slate-700 px-6 py-4 border-b border-slate-600">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-medium text-white">Task Manager</h1>
-          <div className="flex items-center space-x-4">
-            <button className="p-2 text-slate-300 hover:text-white">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-              </svg>
-            </button>
-            <div className="flex items-center space-x-2 bg-slate-600 px-3 py-1.5 rounded-lg">
-              <div className="w-6 h-6 bg-slate-500 rounded-full flex items-center justify-center">
-                <span className="text-xs text-white font-medium">G</span>
-              </div>
-              <span className="text-sm text-slate-300">Google User</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-slate-700 min-h-screen border-r border-slate-600">
-          <div className="p-4">
-            <h2 className="text-lg font-medium text-white mb-2">Calendar View</h2>
-            <p className="text-sm text-slate-400">View your tasks by due date</p>
-          </div>
+    <DashboardLayout>
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-white">Calendar View</h1>
+          <p className="text-sm text-gray-400">View your tasks by due date</p>
         </div>
 
-        {/* Main Calendar */}
-        <div className="flex-1 p-6">
-          <div className="max-w-6xl mx-auto">
-            {/* Calendar Header */}
+        {/* Calendar Section */}
+        <div className="flex-1">
+          <div className="max-w-7xl mx-auto">
+            {/* Month Navigation */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-medium text-white">
+              <h3 className="text-2xl font-medium text-white">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h2>
+              </h3>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={getPreviousMonth}
@@ -148,11 +127,11 @@ const CalendarView: React.FC = () => {
             </div>
 
             {/* Days of the week header */}
-            <div className="grid grid-cols-7 bg-slate-700 border border-slate-600">
+            <div className="grid grid-cols-7 mb-2">
               {daysOfWeek.map(day => (
                 <div
                   key={day}
-                  className="py-3 px-4 text-center text-sm font-medium text-slate-300 border-r border-slate-600 last:border-r-0"
+                  className="py-3 px-4 text-center text-sm font-medium text-slate-400"
                 >
                   {day}
                 </div>
@@ -160,13 +139,13 @@ const CalendarView: React.FC = () => {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 border-l border-t border-slate-600">
+            <div className="grid grid-cols-7 gap-px bg-slate-600 rounded-lg overflow-hidden">
               {renderCalendarDays()}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
