@@ -24,19 +24,32 @@ A modern task management application built with Next.js, featuring Kanban boards
 
 ```
 todo/
-├── app/                    # Next.js App Router pages
-│   ├── CalendarView/      # Calendar view page
-│   ├── Dashboard/         # Dashboard page
-│   ├── KanbanView/        # Kanban board page
-│   ├── Login/             # Authentication pages
-│   └── Signup/
-├── components/            # Reusable React components
-│   ├── dashboard/         # Dashboard-specific components
-│   ├── kanban/           # Kanban board components
-│   ├── layout/           # Layout components
-│   └── tasks/            # Task-related components
-├── contexts/             # React Context providers
-└── public/              # Static assets
+├── app/                          # Next.js App Router pages
+│   ├── analytics/               # Analytics and insights page
+│   ├── calendar/                # Calendar view implementation
+│   ├── CalendarView/            # Calendar component page
+│   ├── Dashboard/               # Main dashboard page
+│   ├── KanbanView/              # Kanban board interface
+│   ├── Login/                   # Authentication pages
+│   ├── profile/                 # User profile management
+│   ├── settings/                # Comprehensive settings page
+│   ├── layout.tsx               # Root layout component
+│   ├── page.tsx                 # Home page
+│   └── globals.css              # Global styles
+├── components/                   # Reusable React components
+│   ├── dashboard/               # Dashboard-specific components
+│   ├── kanban/                  # Kanban board components
+│   ├── layout/                  # Layout components (DashboardLayout)
+│   └── tasks/                   # Task-related components
+├── contexts/                     # React Context providers
+│   └── AuthContext.tsx          # Authentication context
+├── lib/                         # Utility functions and configurations
+├── public/                      # Static assets
+├── .env.local                   # Environment variables
+├── next.config.ts               # Next.js configuration
+├── tailwind.config.js           # Tailwind CSS configuration
+└── tsconfig.json                # TypeScript configuration
+
 ```
 
 ## Getting Started
@@ -125,13 +138,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Next.js](https://nextjs.org/)
 - Icons by [Lucide](https://lucide.dev/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
-
-## Deploy
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
----
-
-Made with ❤️ using Next.js
