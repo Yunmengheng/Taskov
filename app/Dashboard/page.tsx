@@ -6,7 +6,17 @@ import { useTask, type Task } from "@/contexts/TaskContext";
 import StatCards from "@/components/dashboard/StatCards";
 import TaskForm from "@/components/tasks/TaskForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { PlusIcon, CalendarDays, Clock, Pencil, Trash2, CheckCircle } from "lucide-react";
+import { 
+  PlusIcon, 
+  CalendarDays, 
+  Clock, 
+  Pencil, 
+  Trash2, 
+  CheckCircle,
+  Calendar,
+  BarChart3,
+  Settings
+} from "lucide-react";
 
 const Dashboard: React.FC = () => {
   // Expanded to include functions for interactivity
@@ -61,7 +71,23 @@ const Dashboard: React.FC = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
+            <div className="flex items-center space-x-4">
+              <Link href="/calendar" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+                <Calendar size={16} className="mr-1" />
+                Calendar
+              </Link>
+              <Link href="/analytics" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+                <BarChart3 size={16} className="mr-1" />
+                Analytics
+              </Link>
+              <Link href="/settings" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+                <Settings size={16} className="mr-1" />
+                Settings
+              </Link>
+            </div>
+          </div>
           <button
             onClick={() => setShowTaskForm(true)}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

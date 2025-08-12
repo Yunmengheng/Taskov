@@ -13,9 +13,9 @@ import {
   Calendar,
   Settings,
   CheckCircle2,
-  AlertCircle,
-  PieChart
+  AlertCircle
 } from "lucide-react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts';
 
 const Analytics: React.FC = () => {
   const { tasks } = useTask();
@@ -24,7 +24,7 @@ const Analytics: React.FC = () => {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.completed).length;
   const pendingTasks = totalTasks - completedTasks;
-  const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : 0;
+  const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0";
   
   // Tasks by priority
   const highPriorityTasks = tasks.filter(task => task.priority === 'high').length;
@@ -37,201 +37,231 @@ const Analytics: React.FC = () => {
   const studyTasks = tasks.filter(task => task.category === 'study').length;
   
   // Overdue tasks
-  const overdueTasks = tasks.filter(task => 
-    !task.completed && task.dueDate && new Date(task.dueDate) < new Date()
-  ).length;
+  const overdueTasks = tasks.filter(task => {
+    if (!task.dueDate || task.completed) return false;
+    return new Date(task.dueDate) < new Date();
+  }).length;
 
   // Tasks created this week
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const recentTasks = tasks.filter(task => 
-    new Date(task.createdAt) >= oneWeekAgo
-  ).length;
+  const recentTasks = tasks.filter(task => {
+    try {
+      return new Date(task.createdAt) >= oneWeekAgo;
+    } catch {
+      return false;
+    }
+  }).length;
+
+  // Prepare data for charts
+  const priorityData = React.useMemo(() => {
+    const data = [
+      { name: 'High', value: highPriorityTasks, color: '#ef4444' },
+      { name: 'Medium', value: mediumPriorityTasks, color: '#f97316' },
+      { name: 'Low', value: lowPriorityTasks, color: '#22c55e' }
+    ];
+    return data.filter(item => item.value > 0);
+  }, [highPriorityTasks, mediumPriorityTasks, lowPriorityTasks]);
+
+  const categoryData = React.useMemo(() => {
+    const workCompleted = tasks.filter(t => t.category === 'work' && t.completed).length;
+    const workPending = tasks.filter(t => t.category === 'work' && !t.completed).length;
+    const personalCompleted = tasks.filter(t => t.category === 'personal' && t.completed).length;
+    const personalPending = tasks.filter(t => t.category === 'personal' && !t.completed).length;
+    const studyCompleted = tasks.filter(t => t.category === 'study' && t.completed).length;
+    const studyPending = tasks.filter(t => t.category === 'study' && !t.completed).length;
+
+    return [
+      { name: 'Work', completed: workCompleted, pending: workPending },
+      { name: 'Personal', completed: personalCompleted, pending: personalPending },
+      { name: 'Study', completed: studyCompleted, pending: studyPending },
+      { name: 'Health', completed: 0, pending: 0 },
+      { name: 'Other', completed: 0, pending: 0 }
+    ];
+  }, [tasks]);
+
+  const renderCustomizedLabel = React.useCallback((entry: any) => {
+    if (!entry || !entry.value || totalTasks === 0) return null;
+    
+    const RADIAN = Math.PI / 180;
+    const radius = entry.innerRadius + (entry.outerRadius - entry.innerRadius) * 0.7;
+    const x = entry.cx + radius * Math.cos(-entry.midAngle * RADIAN);
+    const y = entry.cy + radius * Math.sin(-entry.midAngle * RADIAN);
+    const percent = Math.round((entry.value / totalTasks) * 100);
+
+    if (percent < 5) return null; // Don't show label for very small slices
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor={x > entry.cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12"
+        fontWeight="bold"
+      >
+        {`${entry.name} ${percent}%`}
+      </text>
+    );
+  }, [totalTasks]);
+
+  const completedThisWeek = React.useMemo(() => {
+    return tasks.filter(task => {
+      if (!task.completed) return false;
+      try {
+        const taskDate = new Date(task.updatedAt || task.createdAt);
+        return taskDate >= oneWeekAgo;
+      } catch {
+        return false;
+      }
+    }).length;
+  }, [tasks, oneWeekAgo]);
+
+  const weeklyActivityRate = React.useMemo(() => {
+    return totalTasks > 0 ? ((recentTasks / totalTasks) * 100).toFixed(1) : "0";
+  }, [recentTasks, totalTasks]);
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header with navigation */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-2">Analytics</h1>
-            <div className="flex items-center space-x-4">
-              <Link href="/Dashboard" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Home size={16} className="mr-1" />
-                Dashboard
-              </Link>
-              <Link href="/calendar" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Calendar size={16} className="mr-1" />
-                Calendar
-              </Link>
-              <Link href="/settings" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Settings size={16} className="mr-1" />
-                Settings
-              </Link>
-            </div>
-          </div>
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-2">Analytics</h1>
+          <p className="text-gray-400 text-sm">View statistics and insights about your tasks</p>
         </div>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+          <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl text-white">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <Target size={20} className="text-blue-400 mr-2" />
-                <h3 className="text-sm font-medium text-gray-400">Total Tasks</h3>
-              </div>
+              <Target size={24} className="text-blue-200" />
             </div>
-            <div className="text-2xl font-bold text-white">{totalTasks}</div>
-            <p className="text-xs text-gray-500 mt-1">All time</p>
+            <div className="text-3xl font-bold mb-1">{totalTasks}</div>
+            <div className="text-blue-200 text-sm">Total Tasks</div>
           </div>
 
-          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+          <div className="bg-gradient-to-br from-green-600 to-green-700 p-6 rounded-xl text-white">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <CheckCircle2 size={20} className="text-green-400 mr-2" />
-                <h3 className="text-sm font-medium text-gray-400">Completed</h3>
-              </div>
+              <CheckCircle2 size={24} className="text-green-200" />
             </div>
-            <div className="text-2xl font-bold text-green-400">{completedTasks}</div>
-            <p className="text-xs text-gray-500 mt-1">{completionRate}% completion rate</p>
+            <div className="text-3xl font-bold mb-1">{completedTasks}</div>
+            <div className="text-green-200 text-sm">Completed</div>
           </div>
 
-          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+          <div className="bg-gradient-to-br from-yellow-600 to-orange-600 p-6 rounded-xl text-white">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <Clock size={20} className="text-orange-400 mr-2" />
-                <h3 className="text-sm font-medium text-gray-400">Pending</h3>
-              </div>
+              <Clock size={24} className="text-yellow-200" />
             </div>
-            <div className="text-2xl font-bold text-orange-400">{pendingTasks}</div>
-            <p className="text-xs text-gray-500 mt-1">In progress</p>
+            <div className="text-3xl font-bold mb-1">{pendingTasks}</div>
+            <div className="text-yellow-200 text-sm">Pending</div>
           </div>
 
-          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+          <div className="bg-gradient-to-br from-red-600 to-red-700 p-6 rounded-xl text-white">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <AlertCircle size={20} className="text-red-400 mr-2" />
-                <h3 className="text-sm font-medium text-gray-400">Overdue</h3>
-              </div>
+              <AlertCircle size={24} className="text-red-200" />
             </div>
-            <div className="text-2xl font-bold text-red-400">{overdueTasks}</div>
-            <p className="text-xs text-gray-500 mt-1">Past due date</p>
+            <div className="text-3xl font-bold mb-1">{overdueTasks}</div>
+            <div className="text-red-200 text-sm">Overdue</div>
           </div>
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Priority Distribution */}
+          {/* Priority Distribution - Pie Chart */}
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-            <div className="flex items-center mb-6">
-              <BarChart3 size={20} className="text-blue-400 mr-2" />
-              <h3 className="text-lg font-semibold text-white">Tasks by Priority</h3>
+            <h3 className="text-lg font-semibold text-white mb-6">Tasks by Priority</h3>
+            <div className="h-80 relative">
+              {priorityData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={priorityData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                      outerRadius={100}
+                      innerRadius={60}
+                      fill="#8884d8"
+                      dataKey="value"
+                      paddingAngle={2}
+                    >
+                      {priorityData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="text-center">
+                    <Target size={48} className="mx-auto mb-4 text-gray-600" />
+                    <p>No tasks to display</p>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                  <span className="text-gray-300">High Priority</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
+            
+            {/* Legend */}
+            {priorityData.length > 0 && (
+              <div className="flex justify-center space-x-6 mt-4">
+                {priorityData.map((entry) => (
+                  <div key={entry.name} className="flex items-center">
                     <div 
-                      className="bg-red-500 h-2 rounded-full" 
-                      style={{ width: totalTasks > 0 ? `${(highPriorityTasks / totalTasks) * 100}%` : '0%' }}
-                    ></div>
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="text-gray-300 text-sm">{entry.name}</span>
                   </div>
-                  <span className="text-white font-medium w-8">{highPriorityTasks}</span>
-                </div>
+                ))}
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Medium Priority</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-orange-500 h-2 rounded-full" 
-                      style={{ width: totalTasks > 0 ? `${(mediumPriorityTasks / totalTasks) * 100}%` : '0%' }}
-                    ></div>
-                  </div>
-                  <span className="text-white font-medium w-8">{mediumPriorityTasks}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Low Priority</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: totalTasks > 0 ? `${(lowPriorityTasks / totalTasks) * 100}%` : '0%' }}
-                    ></div>
-                  </div>
-                  <span className="text-white font-medium w-8">{lowPriorityTasks}</span>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Category Distribution */}
+          {/* Category Distribution - Bar Chart */}
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-            <div className="flex items-center mb-6">
-              <PieChart size={20} className="text-purple-400 mr-2" />
-              <h3 className="text-lg font-semibold text-white">Tasks by Category</h3>
+            <h3 className="text-lg font-semibold text-white mb-6">Tasks by Category</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  />
+                  <Bar 
+                    dataKey="completed" 
+                    stackId="a" 
+                    fill="#22c55e" 
+                    radius={[0, 0, 4, 4]}
+                  />
+                  <Bar 
+                    dataKey="pending" 
+                    stackId="a" 
+                    fill="#ef4444" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Work</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full" 
-                      style={{ width: totalTasks > 0 ? `${(workTasks / totalTasks) * 100}%` : '0%' }}
-                    ></div>
-                  </div>
-                  <span className="text-white font-medium w-8">{workTasks}</span>
-                </div>
+            
+            {/* Legend */}
+            <div className="flex justify-center space-x-6 mt-4">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2" />
+                <span className="text-gray-300 text-sm">Completed</span>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Personal</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-purple-500 h-2 rounded-full" 
-                      style={{ width: totalTasks > 0 ? `${(personalTasks / totalTasks) * 100}%` : '0%' }}
-                    ></div>
-                  </div>
-                  <span className="text-white font-medium w-8">{personalTasks}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-pink-500 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Study</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-pink-500 h-2 rounded-full" 
-                      style={{ width: totalTasks > 0 ? `${(studyTasks / totalTasks) * 100}%` : '0%' }}
-                    ></div>
-                  </div>
-                  <span className="text-white font-medium w-8">{studyTasks}</span>
-                </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
+                <span className="text-gray-300 text-sm">Pending</span>
               </div>
             </div>
           </div>
@@ -249,17 +279,11 @@ const Analytics: React.FC = () => {
               <p className="text-gray-400 text-sm">Tasks created this week</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">
-                {tasks.filter(task => 
-                  task.completed && new Date(task.updatedAt || task.createdAt) >= oneWeekAgo
-                ).length}
-              </div>
+              <div className="text-2xl font-bold text-blue-400">{completedThisWeek}</div>
               <p className="text-gray-400 text-sm">Tasks completed this week</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-400">
-                {totalTasks > 0 ? ((recentTasks / totalTasks) * 100).toFixed(1) : 0}%
-              </div>
+              <div className="text-2xl font-bold text-orange-400">{weeklyActivityRate}%</div>
               <p className="text-gray-400 text-sm">Weekly activity rate</p>
             </div>
           </div>
