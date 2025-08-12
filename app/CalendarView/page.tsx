@@ -10,12 +10,10 @@ interface CalendarEvent {
 }
 
 const CalendarView: React.FC = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [events] = useState<CalendarEvent[]>([
-    { id: '1', title: 'Team Meeting', date: new Date(2025, 7, 15), color: '#3b82f6' },
-    { id: '2', title: 'Project Deadline', date: new Date(2025, 7, 20), color: '#ef4444' },
-    { id: '3', title: 'Review Session', date: new Date(2025, 7, 25), color: '#10b981' },
-  ]);
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); // July 2025
+  const [events] = useState<CalendarEvent[]>(
+    [{ id: '1', title: 'Read', date: new Date(2025, 6, 16), color: '#64748b' },]
+  );
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -57,35 +55,27 @@ const CalendarView: React.FC = () => {
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(
-        <div key={`empty-${i}`} className="h-24 border border-gray-200"></div>
+        <div key={`empty-${i}`} className="h-20 bg-slate-700"></div>
       );
     }
 
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dayEvents = getEventsForDate(day);
-      const isToday = 
-        day === new Date().getDate() &&
-        currentDate.getMonth() === new Date().getMonth() &&
-        currentDate.getFullYear() === new Date().getFullYear();
 
       days.push(
         <div
           key={day}
-          className={`h-24 border border-gray-200 p-1 cursor-pointer hover:bg-gray-50 ${
-            isToday ? 'bg-blue-50 border-blue-300' : ''
-          }`}
+          className="h-20 bg-slate-700 p-2 border-r border-b border-slate-600 relative"
         >
-          <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+          <div className="text-xs text-slate-300 font-medium">
             {day}
           </div>
-          <div className="space-y-1">
+          <div className="mt-1">
             {dayEvents.map(event => (
               <div
                 key={event.id}
-                className="text-xs p-1 rounded truncate text-white"
-                style={{ backgroundColor: event.color || '#6b7280' }}
-                title={event.title}
+                className="text-xs px-1 py-0.5 bg-slate-600 text-slate-300 rounded text-center"
               >
                 {event.title}
               </div>
@@ -99,62 +89,80 @@ const CalendarView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">Calendar View</h1>
+    <div className="min-h-screen bg-slate-800">
+      {/* Header */}
+      <div className="bg-slate-700 px-6 py-4 border-b border-slate-600">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-medium text-white">Task Manager</h1>
           <div className="flex items-center space-x-4">
-            <button
-              onClick={getPreviousMonth}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              ← Previous
+            <button className="p-2 text-slate-300 hover:text-white">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+              </svg>
             </button>
-            <h2 className="text-xl font-semibold text-gray-800 min-w-48 text-center">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </h2>
-            <button
-              onClick={getNextMonth}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
-
-        {/* Days of the week header */}
-        <div className="grid grid-cols-7 gap-0 mb-2">
-          {daysOfWeek.map(day => (
-            <div
-              key={day}
-              className="h-10 bg-gray-100 border border-gray-300 flex items-center justify-center font-medium text-gray-700"
-            >
-              {day}
+            <div className="flex items-center space-x-2 bg-slate-600 px-3 py-1.5 rounded-lg">
+              <div className="w-6 h-6 bg-slate-500 rounded-full flex items-center justify-center">
+                <span className="text-xs text-white font-medium">G</span>
+              </div>
+              <span className="text-sm text-slate-300">Google User</span>
             </div>
-          ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-0 border border-gray-300">
-          {renderCalendarDays()}
+          </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Legend</h3>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span className="text-sm text-gray-700">Meetings</span>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-64 bg-slate-700 min-h-screen border-r border-slate-600">
+          <div className="p-4">
+            <h2 className="text-lg font-medium text-white mb-2">Calendar View</h2>
+            <p className="text-sm text-slate-400">View your tasks by due date</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-red-500 rounded"></div>
-            <span className="text-sm text-gray-700">Deadlines</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            <span className="text-sm text-gray-700">Reviews</span>
+        </div>
+
+        {/* Main Calendar */}
+        <div className="flex-1 p-6">
+          <div className="max-w-6xl mx-auto">
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-medium text-white">
+                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h2>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={getPreviousMonth}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  onClick={getNextMonth}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Days of the week header */}
+            <div className="grid grid-cols-7 bg-slate-700 border border-slate-600">
+              {daysOfWeek.map(day => (
+                <div
+                  key={day}
+                  className="py-3 px-4 text-center text-sm font-medium text-slate-300 border-r border-slate-600 last:border-r-0"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 border-l border-t border-slate-600">
+              {renderCalendarDays()}
+            </div>
           </div>
         </div>
       </div>
