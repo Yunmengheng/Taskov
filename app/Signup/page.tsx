@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MoonIcon, SunIcon, LockIcon, MailIcon, UserIcon } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+export const getSupabase = () => {
+  return supabase
+}
+
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,15 +40,29 @@ const Signup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
     if (password !== confirmPassword) {
       return setError('Passwords do not match');
     }
+    
     setIsLoading(true);
+    
+    // Debug logging
+    console.log('🔍 Attempting signup with:', { 
+      name, 
+      email, 
+      password: password ? '***' : 'empty',
+      confirmPassword: confirmPassword ? '***' : 'empty'
+    });
+    console.log('🔍 Auth context available:', !!signup);
+    
     try {
       await signup(name, email, password);
-      router.push('/dashboard');
+      console.log('✅ Signup successful, redirecting to Dashboard...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to create an account');
+      console.error('❌ Signup error:', err);
+      setError(`Failed to create an account: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -42,11 +70,16 @@ const Signup: React.FC = () => {
   const handleGoogleSignup = async () => {
     setError('');
     setSocialLoading('google');
+    
+    console.log('🔍 Attempting Google signup...');
+    
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
+      console.log('✅ Google signup successful, redirecting...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to sign up with Google.');
+      console.error('❌ Google signup error:', err);
+      setError(`Failed to sign up with Google: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSocialLoading(null);
     }
@@ -54,11 +87,16 @@ const Signup: React.FC = () => {
   const handleFacebookSignup = async () => {
     setError('');
     setSocialLoading('facebook');
+    
+    console.log('🔍 Attempting Facebook signup...');
+    
     try {
       await loginWithFacebook();
-      router.push('/dashboard');
+      console.log('✅ Facebook signup successful, redirecting...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to sign up with Facebook.');
+      console.error('❌ Facebook signup error:', err);
+      setError(`Failed to sign up with Facebook: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSocialLoading(null);
     }
@@ -71,7 +109,7 @@ const Signup: React.FC = () => {
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+            <Link href="/Login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
               sign in to your account
             </Link>
           </p>
@@ -148,11 +186,6 @@ const Signup: React.FC = () => {
             <button type="submit" disabled={isLoading || socialLoading !== null} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70">
               {isLoading ? 'Creating account...' : 'Sign up with email'}
             </button>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              For demo purposes, any valid information will create an account
-            </p>
           </div>
         </form>
       </div>

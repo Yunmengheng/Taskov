@@ -6,6 +6,7 @@ export type Priority = "low" | "medium" | "high";
 export type Category = "work" | "personal" | "study";
 
 export type Task = {
+  updatedAt: string;
   id: string;
   title: string;
   description?: string;

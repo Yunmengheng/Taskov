@@ -22,11 +22,18 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+    
+    // Debug logging
+    console.log('🔍 Attempting login with:', { email, password: password ? '***' : 'empty' });
+    console.log('🔍 Auth context available:', !!login);
+    
     try {
       await login(email, password);
-      router.push('/dashboard');
+      console.log('✅ Login successful, redirecting to Dashboard...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to sign in. Please check your credentials.');
+      console.error('❌ Login error:', err);
+      setError(`Failed to sign in: ${err instanceof Error ? err.message : 'Please check your credentials.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -35,11 +42,16 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     setError('');
     setSocialLoading('google');
+    
+    console.log('🔍 Attempting Google login...');
+    
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
+      console.log('✅ Google login successful, redirecting...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to sign in with Google.');
+      console.error('❌ Google login error:', err);
+      setError(`Failed to sign in with Google: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSocialLoading(null);
     }
@@ -48,11 +60,16 @@ const Login: React.FC = () => {
   const handleFacebookLogin = async () => {
     setError('');
     setSocialLoading('facebook');
+    
+    console.log('🔍 Attempting Facebook login...');
+    
     try {
       await loginWithFacebook();
-      router.push('/dashboard');
+      console.log('✅ Facebook login successful, redirecting...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to sign in with Facebook.');
+      console.error('❌ Facebook login error:', err);
+      setError(`Failed to sign in with Facebook: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSocialLoading(null);
     }
@@ -61,11 +78,16 @@ const Login: React.FC = () => {
   const handleGuestLogin = async () => {
     setError('');
     setSocialLoading('guest');
+    
+    console.log('🔍 Attempting guest login...');
+    
     try {
       await loginAsGuest();
-      router.push('/dashboard');
+      console.log('✅ Guest login successful, redirecting...');
+      router.push('/Dashboard'); // Changed from '/dashboard' to '/Dashboard'
     } catch (err) {
-      setError('Failed to sign in as guest.');
+      console.error('❌ Guest login error:', err);
+      setError(`Failed to sign in as guest: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSocialLoading(null);
     }
@@ -80,7 +102,7 @@ const Login: React.FC = () => {
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
-            <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+            <Link href="/Signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
               create a new account
             </Link>
           </p>
@@ -193,12 +215,6 @@ const Login: React.FC = () => {
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
-          </div>
-
-          <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              For demo purposes, any email/password combination will work
-            </p>
           </div>
         </form>
       </div>

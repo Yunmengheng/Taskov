@@ -1,6 +1,8 @@
-'use client'; // 👈 REQUIRED for any component that uses hooks in App Router
+'use client';
 
-import React, { useEffect, useState, createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getSupabase } from '@/lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -17,100 +19,185 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
   loginAsGuest: () => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isGuest: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        const supabase = getSupabase();
+        if (!supabase) {
+          if (isMounted) setLoading(false);
+          return;
+        }
+
+        // Get initial session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (isMounted) {
+          setCurrentUser(session?.user ? mapSupabaseUser(session.user) : null);
+        }
+
+        // Listen for auth changes
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (isMounted) {
+            setCurrentUser(session?.user ? mapSupabaseUser(session.user) : null);
+          }
+        });
+
+        if (isMounted) setLoading(false);
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
-    if (email && password) {
-      const mockUser: User = {
-        id: '1',
-        name: email.split('@')[0],
-        email,
-        role: email.includes('admin') ? 'admin' : 'user',
-        provider: 'email'
-      };
-      setCurrentUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } else {
-      throw new Error('Invalid credentials');
+  const mapSupabaseUser = (user: SupabaseUser): User => {
+    let provider: 'email' | 'google' | 'facebook' | 'guest' = 'email';
+    
+    if (user.app_metadata?.provider) {
+      const metaProvider = user.app_metadata.provider;
+      if (metaProvider === 'google' || metaProvider === 'facebook') {
+        provider = metaProvider;
+      }
+    } else if (user.is_anonymous) {
+      provider = 'guest';
     }
+
+    return {
+      id: user.id,
+      name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+      email: user.email || '',
+      role: (user.user_metadata?.role as 'admin' | 'user' | 'guest') || 'user',
+      provider,
+    };
   };
 
-  const loginWithGoogle = async (): Promise<void> => {
-    await new Promise(res => setTimeout(res, 500));
-    const mockGoogleUser: User = {
-      id: 'g-' + Date.now(),
-      name: 'Google User',
-      email: 'user@gmail.com',
-      role: 'user',
-      provider: 'google'
-    };
-    setCurrentUser(mockGoogleUser);
-    localStorage.setItem('user', JSON.stringify(mockGoogleUser));
-  };
+  const login = async (email: string, password: string): Promise<void> => {
+    console.log('🔍 AuthContext: Starting login process...');
+    
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.error('❌ AuthContext: Supabase not initialized');
+      throw new Error('Supabase not initialized');
+    }
 
-  const loginWithFacebook = async (): Promise<void> => {
-    await new Promise(res => setTimeout(res, 500));
-    const mockFacebookUser: User = {
-      id: 'fb-' + Date.now(),
-      name: 'Facebook User',
-      email: 'user@facebook.com',
-      role: 'user',
-      provider: 'facebook'
-    };
-    setCurrentUser(mockFacebookUser);
-    localStorage.setItem('user', JSON.stringify(mockFacebookUser));
-  };
-
-  const loginAsGuest = async (): Promise<void> => {
-    await new Promise(res => setTimeout(res, 500));
-    const mockGuestUser: User = {
-      id: 'guest-' + Date.now(),
-      name: 'Guest User',
-      email: 'guest@example.com',
-      role: 'guest',
-      provider: 'guest'
-    };
-    setCurrentUser(mockGuestUser);
-    localStorage.setItem('user', JSON.stringify(mockGuestUser));
+    console.log('🔍 AuthContext: Calling Supabase signInWithPassword...');
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      console.error('❌ AuthContext: Supabase login error:', error);
+      throw new Error(error.message);
+    }
+    
+    console.log('✅ AuthContext: Login successful:', data);
   };
 
   const signup = async (name: string, email: string, password: string): Promise<void> => {
-    if (name && email && password) {
-      const newUser: User = {
-        id: Date.now().toString(),
-        name,
-        email,
-        role: 'user',
-        provider: 'email'
-      };
-      setCurrentUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-    } else {
-      throw new Error('Invalid information');
+    console.log('🔍 AuthContext: Starting signup process...');
+    console.log('🔍 AuthContext: Signup data:', { name, email, password: '***' });
+    
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.error('❌ AuthContext: Supabase not initialized');
+      throw new Error('Supabase not initialized');
+    }
+
+    console.log('🔍 AuthContext: Calling Supabase signUp...');
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          full_name: name,
+        },
+      },
+    });
+
+    if (error) {
+      console.error('❌ AuthContext: Supabase signup error:', error);
+      throw new Error(error.message);
+    }
+    
+    console.log('✅ AuthContext: Signup successful:', data);
+  };
+
+  const loginWithGoogle = async (): Promise<void> => {
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase not initialized');
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/Dashboard` : undefined,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('user');
+  const loginWithFacebook = async (): Promise<void> => {
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase not initialized');
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/Dashboard` : undefined,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  const loginAsGuest = async (): Promise<void> => {
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase not initialized');
+
+    const { error } = await supabase.auth.signInAnonymously();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase not initialized');
+
+    await supabase.auth.signOut();
   };
 
   const value: AuthContextType = {
@@ -124,15 +211,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     isAuthenticated: !!currentUser,
     isAdmin: currentUser?.role === 'admin',
     isGuest: currentUser?.role === 'guest',
+    loading,
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex w-full h-screen justify-center items-center">
-        Loading...
-      </div>
-    );
-  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
@@ -144,3 +224,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
