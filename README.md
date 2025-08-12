@@ -62,8 +62,8 @@ todo/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/todo.git
-cd todo
+git clone https://github.com/Yunmengheng/Taskov.git
+cd Taskov
 ```
 
 2. Install dependencies:
