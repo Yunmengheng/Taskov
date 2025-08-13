@@ -54,42 +54,9 @@ const Calendar: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header with navigation */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-2">Calendar</h1>
-            <div className="flex items-center space-x-4">
-              <Link href="/Dashboard" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Home size={16} className="mr-1" />
-                Dashboard
-              </Link>
-              <Link href="/analytics" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <BarChart3 size={16} className="mr-1" />
-                Analytics
-              </Link>
-              <Link href="/settings" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Settings size={16} className="mr-1" />
-                Settings
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigateMonth('prev')}
-              className="p-2 text-gray-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <h2 className="text-xl font-semibold text-white min-w-[200px] text-center">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </h2>
-            <button
-              onClick={() => navigateMonth('next')}
-              className="p-2 text-gray-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-2">Calendar</h1>
+          <p className="text-gray-400 text-sm">View statistics and insights about your tasks</p>
         </div>
 
         {/* Calendar Grid */}

@@ -73,20 +73,7 @@ const Dashboard: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <Link href="/calendar" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Calendar size={16} className="mr-1" />
-                Calendar
-              </Link>
-              <Link href="/analytics" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <BarChart3 size={16} className="mr-1" />
-                Analytics
-              </Link>
-              <Link href="/settings" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Settings size={16} className="mr-1" />
-                Settings
-              </Link>
-            </div>
+          <p className="text-gray-400 text-sm">View statistics and insights about your tasks</p>
           </div>
           <button
             onClick={() => setShowTaskForm(true)}
