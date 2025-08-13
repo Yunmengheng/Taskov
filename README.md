@@ -4,10 +4,9 @@ A modern task management application built with Next.js, featuring Kanban boards
 
 ## Features
 
+- 📊 **Dashboard**: Overview of your tasks and productivity metrics
 - 📋 **Kanban Board**: Drag and drop tasks between different status columns
 - 📅 **Calendar View**: Visualize tasks in a calendar format
-- 📊 **Dashboard**: Overview of your tasks and productivity metrics
-- 🌙 **Dark Theme**: Modern dark UI design
 - 📱 **Responsive**: Works seamlessly on desktop and mobile devices
 - 🔐 **Authentication**: Secure login and signup functionality
 
@@ -63,8 +62,8 @@ todo/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/todo.git
-cd todo
+git clone https://github.com/Yunmengheng/Taskov.git
+cd Taskov
 ```
 
 2. Install dependencies:
