@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTask, type Task } from "@/contexts/TaskContext";
+import { useAuth } from "@/contexts/AuthContext";
 import StatCards from "@/components/dashboard/StatCards";
 import TaskForm from "@/components/tasks/TaskForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -19,8 +20,8 @@ import {
 } from "lucide-react";
 
 const Dashboard: React.FC = () => {
-  // Expanded to include functions for interactivity
-  const { tasks, deleteTask, toggleTaskCompletion } = useTask();
+  const { tasks, deleteTask, toggleTaskCompletion, loading } = useTask();
+  const { user } = useAuth();
 
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editTask, setEditTask] = useState<Task | null>(null);
@@ -65,6 +66,17 @@ const Dashboard: React.FC = () => {
     personal: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
     study: "bg-pink-500/20 text-pink-400 border border-pink-500/30",
   };
+
+  useEffect(() => {
+    console.log('🔍 Dashboard: User:', user?.email || 'No user');
+    console.log('🔍 Dashboard: Tasks count:', tasks.length);
+    console.log('🔍 Dashboard: Loading:', loading);
+    console.log('🔍 Dashboard: Tasks:', tasks);
+  }, [user, tasks, loading]);
+
+  if (loading) {
+    return <div className="text-white">Loading tasks...</div>;
+  }
 
   return (
     <DashboardLayout>
