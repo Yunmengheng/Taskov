@@ -12,7 +12,8 @@ import {
   BarChart3,
   Settings,
   Menu,
-  LogOut
+  LogOut,
+  Columns3
 } from "lucide-react";
 
 interface SidebarProps {
@@ -26,10 +27,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
   const { signOut } = useAuth();
 
   const handleSignOut = () => {
-    console.log('Logout button clicked'); // Add this for debugging
+    console.log('Logout button clicked');
     try {
-      signOut(); // Use signOut instead of logout
-      console.log('SignOut function called'); // Add this for debugging
+      signOut();
+      console.log('SignOut function called');
       router.push('/Login');
     } catch (error) {
       console.error('Error during signOut:', error);
@@ -44,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
       active: pathname === "/Dashboard"
     },
     {
-      icon: <CheckSquare size={20} />,
+      icon: <Columns3 size={20} />,
       label: "Task Board",
       href: "/KanbanView",
       active: pathname === "/KanbanView"
@@ -52,8 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
     {
       icon: <CheckSquare size={20} />,
       label: "List View",
-      href: "/tasks",
-      active: pathname === "/tasks"
+      href: "/listview",
+      active: pathname === "/listview"
     },
     {
       icon: <Calendar size={20} />,
@@ -80,24 +81,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
       {/* Sidebar - starts narrow with icons only, expands on hover */}
       <div className="bg-slate-800 border-r border-slate-700 h-full transition-all duration-300 ease-in-out w-16 group-hover:w-64 shadow-lg flex flex-col">
         {/* Sidebar content */}
-        <div className="p-4 flex-1">
+        <div className="flex-1">
           {/* Menu items */}
-          <nav className="space-y-2 mt-6">
+          <nav className="space-y-1 p-2 mt-6">
             {menuItems.map((item) => (
               <div key={item.href} className="relative group/tooltip">
                 <Link
                   href={item.href}
-                  className={`flex items-center px-3 py-3 rounded-lg transition-colors relative ${
+                  className={`flex items-center h-10 rounded-xl transition-colors relative ${
                     item.active
                       ? "bg-blue-600 text-white"
                       : "text-gray-400 hover:text-white hover:bg-slate-700"
                   }`}
                 >
-                  {/* Icon - always visible */}
-                  <span className="flex-shrink-0 z-10">{item.icon}</span>
+                  {/* Icon container - perfectly centered for collapsed state */}
+                  <div className="w-12 h-10 flex items-center justify-center flex-shrink-0">
+                    {item.icon}
+                  </div>
                   
                   {/* Label - hidden by default, appears on sidebar hover */}
-                  <span className="ml-3 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 overflow-hidden w-0 group-hover:w-auto">
+                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 overflow-hidden w-0 group-hover:w-auto pr-4">
                     {item.label}
                   </span>
                 </Link>
@@ -113,19 +116,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
         </div>
 
         {/* Logout button at bottom */}
-        <div className="p-4 border-t border-slate-700">
+        <div className="p-2 border-t border-slate-700">
           <div className="relative group/tooltip">
             <button
               onClick={handleSignOut}
-              className="flex items-center px-3 py-3 rounded-lg transition-colors w-full text-gray-400 hover:text-white hover:bg-red-600/20 hover:border-red-500/30"
+              className="flex items-center h-10 rounded-xl transition-colors w-full text-gray-400 hover:text-white hover:bg-red-600/20"
             >
-              {/* Icon - always visible */}
-              <span className="flex-shrink-0 z-10">
+              {/* Icon container - perfectly centered for collapsed state */}
+              <div className="w-12 h-10 flex items-center justify-center flex-shrink-0">
                 <LogOut size={20} />
-              </span>
+              </div>
               
               {/* Label - hidden by default, appears on sidebar hover */}
-              <span className="ml-3 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 overflow-hidden w-0 group-hover:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 overflow-hidden w-0 group-hover:w-auto pr-4">
                 Sign Out
               </span>
             </button>
