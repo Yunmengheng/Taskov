@@ -64,14 +64,24 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">Due date</label>
-              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              <input 
+                type="date" 
+                value={dueDate} 
+                onChange={(e) => setDueDate(e.target.value)} 
+                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Priority</label>
-              <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select Priority</option>
+                <option value="low" className="bg-slate-700 text-white">Low</option>
+                <option value="medium" className="bg-slate-700 text-white">Medium</option>
+                <option value="high" className="bg-slate-700 text-white">High</option>
               </select>
             </div>
           </div>

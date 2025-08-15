@@ -57,16 +57,16 @@ const Dashboard: React.FC = () => {
 
   // Styles for priority and category tags to match the image
   const priorityStyles: { [key: string]: string } = {
-    low: "bg-green-500/20 text-green-400 border border-green-500/30",
-    medium: "bg-orange-500/20 text-orange-400 border border-orange-500/30",
-    high: "bg-red-500/20 text-red-400 border border-red-500/30",
+    low: "bg-green-900/40 text-green-300 border border-green-700/50",
+    medium: "bg-orange-900/40 text-orange-300 border border-orange-700/50",
+    high: "bg-red-900/40 text-red-300 border border-red-700/50",
   };
   const categoryStyles: { [key: string]: string } = {
-    work: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
-    personal: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
-    study: "bg-pink-500/20 text-pink-400 border border-pink-500/30",
+    work: "bg-blue-900/40 text-blue-300 border border-blue-700/50",
+    personal: "bg-purple-900/40 text-purple-300 border border-purple-700/50",
+    study: "bg-pink-900/40 text-pink-300 border border-pink-700/50",
   };
-
+  
   useEffect(() => {
     console.log('🔍 Dashboard: User:', user?.email || 'No user');
     console.log('🔍 Dashboard: Tasks count:', tasks.length);
