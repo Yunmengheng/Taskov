@@ -10,14 +10,26 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<string | "">("");
+  const [dueTime, setDueTime] = useState<string | "">("");
   const [priority, setPriority] = useState("medium");
+  const [category, setCategory] = useState("personal");
 
   useEffect(() => {
     if (editTask) {
       setTitle(editTask.title);
       setDescription(editTask.description || "");
-      setDueDate(editTask.dueDate ? editTask.dueDate.slice(0, 10) : "");
+      
+      if (editTask.dueDate) {
+        const date = new Date(editTask.dueDate);
+        setDueDate(date.toISOString().slice(0, 10));
+        setDueTime(date.toTimeString().slice(0, 5));
+      } else {
+        setDueDate("");
+        setDueTime("");
+      }
+      
       setPriority(editTask.priority || "medium");
+      setCategory(editTask.category || "personal");
     }
   }, [editTask]);
 
@@ -27,19 +39,29 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
     e.preventDefault();
     if (!title.trim()) return;
 
+    let dueDateTimeISO: string | undefined = undefined;
+    if (dueDate) {
+      const dateTime = dueTime 
+        ? new Date(`${dueDate}T${dueTime}:00`)
+        : new Date(dueDate);
+      dueDateTimeISO = dateTime.toISOString();
+    }
+
     if (isEdit && editTask) {
       updateTask(editTask.id, {
         title: title.trim(),
         description: description.trim(),
-        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+        dueDate: dueDateTimeISO,
         priority: priority as any,
+        category: category as any,
       });
     } else {
       addTask({
         title: title.trim(),
         description: description.trim(),
-        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+        dueDate: dueDateTimeISO,
         priority: priority as any,
+        category: category as any,
       });
     }
     onClose();
@@ -55,15 +77,26 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            <input 
+              value={title} 
+              onChange={(e) => setTitle(e.target.value)} 
+              className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" 
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={3} />
+            <textarea 
+              value={description} 
+              onChange={(e) => setDescription(e.target.value)} 
+              className="w-full rounded border border-white/10 bg-transparent px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600" 
+              rows={3} 
+            />
           </div>
+          
+          {/* Due Date and Time Row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Due date</label>
+              <label className="block text-sm font-medium mb-1">Due Date</label>
               <input 
                 type="date" 
                 value={dueDate} 
@@ -71,6 +104,19 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
                 className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Due Time</label>
+              <input 
+                type="time" 
+                value={dueTime} 
+                onChange={(e) => setDueTime(e.target.value)} 
+                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
+          </div>
+
+          {/* Priority and Category Row */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">Priority</label>
               <select
@@ -83,7 +129,20 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
                 <option value="high" className="bg-slate-700 text-white">High</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="work" className="bg-slate-700 text-white">Work</option>
+                <option value="study" className="bg-slate-700 text-white">Study</option>
+                <option value="personal" className="bg-slate-700 text-white">Personal</option>
+              </select>
+            </div>
           </div>
+
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded border border-white/10">Cancel</button>
             <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">{isEdit ? "Save" : "Create"}</button>

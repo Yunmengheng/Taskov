@@ -111,7 +111,8 @@ const Analytics: React.FC = () => {
     return tasks.filter(task => {
       if (!task.completed) return false;
       try {
-        const taskDate = new Date(task.updatedAt || task.createdAt);
+        // Use completedAt if available, otherwise fall back to createdAt
+        const taskDate = new Date(task.completedAt || task.createdAt);
         return taskDate >= oneWeekAgo;
       } catch {
         return false;
