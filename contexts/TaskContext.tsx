@@ -16,21 +16,15 @@ export type Status = "pending" | "in_progress" | "completed";
 export interface Task {
   id: string;
   title: string;
-  description: string;
-  status: Status;
-  priority: Priority;
-  category: Category;
-  due_date: string | null;
-  created_at: string;
-  updated_at: string;
-  assigned_to: string;
-  
-  // Computed properties for backward compatibility
+  description?: string;
   completed: boolean;
-  dueDate: string | null;
+  inProgress?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  category?: 'work' | 'personal' | 'study';
+  dueDate?: string;
   createdAt: string;
-  updatedAt: string;
-  inProgress: boolean;
+  completedAt?: string; // Add this line
+  userId: string;
 }
 
 type TaskInput = {
@@ -73,7 +67,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     completed: dbTask.status === 'completed',
     dueDate: dbTask.due_date,
     createdAt: dbTask.created_at,
-    updatedAt: dbTask.updated_at,
+    completedAt: dbTask.completed_at, // Map completed_at to completedAt
     inProgress: dbTask.status === 'in_progress'
   });
 
@@ -135,10 +129,20 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const dbUpdates: any = {};
       if (updates.title !== undefined) dbUpdates.title = updates.title;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.status !== undefined) dbUpdates.status = updates.status;
       if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
       if (updates.category !== undefined) dbUpdates.category = updates.category;
       if (updates.dueDate !== undefined) dbUpdates.due_date = updates.dueDate;
+
+      // Convert Task properties to database status
+      if (updates.completed !== undefined || updates.inProgress !== undefined) {
+        if (updates.completed === true) {
+          dbUpdates.status = 'completed';
+        } else if (updates.inProgress === true) {
+          dbUpdates.status = 'in_progress';
+        } else {
+          dbUpdates.status = 'pending';
+        }
+      }
 
       const { error } = await supabase
         .from('tasks')
@@ -160,8 +164,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
-    const newStatus: Status = task.completed ? 'pending' : 'completed';
-    await updateTask(id, { status: newStatus, completed: !task.completed });
+    await updateTask(id, { 
+      completed: !task.completed
+    });
   };
 
   const deleteTask = async (id: string) => {

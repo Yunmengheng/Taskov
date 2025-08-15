@@ -31,14 +31,14 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
       updateTask(editTask.id, {
         title: title.trim(),
         description: description.trim(),
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         priority: priority as any,
       });
     } else {
       addTask({
         title: title.trim(),
         description: description.trim(),
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         priority: priority as any,
       });
     }
@@ -78,7 +78,6 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
                 onChange={(e) => setPriority(e.target.value)}
                 className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select Priority</option>
                 <option value="low" className="bg-slate-700 text-white">Low</option>
                 <option value="medium" className="bg-slate-700 text-white">Medium</option>
                 <option value="high" className="bg-slate-700 text-white">High</option>

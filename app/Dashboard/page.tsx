@@ -14,9 +14,9 @@ import {
   Pencil, 
   Trash2, 
   CheckCircle,
-  Calendar,
-  BarChart3,
-  Settings
+  ArrowRight,
+  Target,
+  TrendingUp
 } from "lucide-react";
 
 const Dashboard: React.FC = () => {
@@ -47,229 +47,251 @@ const Dashboard: React.FC = () => {
     setEditTask(null);
   };
   
-  // Helper for formatting dates to match the image style
+  // Helper for formatting dates
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
-      month: "short", day: "numeric", year: "numeric",
-      hour: "numeric", minute: "2-digit", hour12: true,
+      month: "short", 
+      day: "numeric", 
+      year: "numeric",
+      hour: "numeric", 
+      minute: "2-digit", 
+      hour12: true,
     });
   };
 
-  // Styles for priority and category tags to match the image
-  const priorityStyles: { [key: string]: string } = {
-    low: "bg-green-900/40 text-green-300 border border-green-700/50",
-    medium: "bg-orange-900/40 text-orange-300 border border-orange-700/50",
-    high: "bg-red-900/40 text-red-300 border border-red-700/50",
+  const formatSimpleDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short", 
+      day: "numeric"
+    });
   };
+
+  // Improved styles for priority and category tags
+  const priorityStyles: { [key: string]: string } = {
+    low: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+    medium: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+    high: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
+  };
+
   const categoryStyles: { [key: string]: string } = {
-    work: "bg-blue-900/40 text-blue-300 border border-blue-700/50",
-    personal: "bg-purple-900/40 text-purple-300 border border-purple-700/50",
-    study: "bg-pink-900/40 text-pink-300 border border-pink-700/50",
+    work: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+    personal: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+    study: "bg-pink-500/10 text-pink-400 border border-pink-500/20",
   };
   
   useEffect(() => {
     console.log('🔍 Dashboard: User:', user?.email || 'No user');
     console.log('🔍 Dashboard: Tasks count:', tasks.length);
     console.log('🔍 Dashboard: Loading:', loading);
-    console.log('🔍 Dashboard: Tasks:', tasks);
   }, [user, tasks, loading]);
 
   if (loading) {
-    return <div className="text-white">Loading tasks...</div>;
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-slate-400 text-lg">Loading your dashboard...</div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+      <div className="w-full px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Welcome Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-400 text-sm">View statistics and insights about your tasks</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Welcome back, {user?.email?.split('@')[0] || 'User'}
+            </h1>
+            <p className="text-slate-400">
+              Here's what's happening with your tasks today
+            </p>
           </div>
           <button
             onClick={() => setShowTaskForm(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors shadow-lg hover:shadow-xl"
           >
-            <PlusIcon size={16} className="mr-2" />
-            New Task
+            <PlusIcon size={20} className="mr-2" />
+            Create Task
           </button>
         </div>
 
-        {/* Stats */}
+        {/* Stats Cards */}
         <StatCards />
 
-        {/* Tasks Lists */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Recent Tasks */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-white">Recent Tasks</h2>
-              <Link href="/tasks" className="text-sm text-blue-400 hover:text-blue-300">
-                View all
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {recentTasks.length > 0 ? (
-                recentTasks.map((task) => (
-                  <div key={task.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                          task.completed 
-                            ? 'bg-green-500 border-green-500' 
-                            : 'border-slate-500'
-                        }`}>
-                          {task.completed && <CheckCircle size={12} className="text-white" />}
-                        </div>
-                        <div>
-                          <h3 className={`font-medium ${
-                            task.completed ? 'line-through text-gray-500' : 'text-white'
-                          }`}>
-                            {task.title}
-                          </h3>
-                          <p className={`text-sm mt-1 ${
-                            task.completed ? 'line-through text-gray-600' : 'text-gray-400'
-                          }`}>
-                            {task.description}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => handleEditTask(task)} 
-                          className="text-gray-400 hover:text-white transition-colors"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button 
-                          onClick={() => deleteTask(task.id)} 
-                          className="text-gray-400 hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4 text-xs">
-                      {task.dueDate && (
-                        <div className="flex items-center text-red-400">
-                          <CalendarDays size={12} className="mr-1" />
-                          <span>{formatDate(task.dueDate)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center space-x-2">
-                        {task.priority && (
-                          <span className={`px-2 py-1 text-xs rounded-md font-medium ${priorityStyles[task.priority]}`}>
-                            {task.priority}
-                          </span>
-                        )}
-                        {task.category && (
-                          <span className={`px-2 py-1 text-xs rounded-md font-medium ${categoryStyles[task.category]}`}>
-                            {task.category}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center text-xs text-gray-500 mt-3 pt-3 border-t border-slate-700">
-                      <Clock size={10} className="mr-1" />
-                      <span>Created {formatDate(task.createdAt)}</span>
-                    </div>
+          {/* Recent Tasks - Takes 2 columns on lg screens */}
+          <div className="lg:col-span-2">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <TrendingUp size={20} className="text-blue-400" />
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-10 bg-slate-800 rounded-xl border border-slate-700">
-                  <p className="text-gray-400">No recent tasks</p>
+                  <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
                 </div>
-              )}
+                <Link 
+                  href="/tasks" 
+                  className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 font-medium"
+                >
+                  View all tasks
+                  <ArrowRight size={16} className="ml-1" />
+                </Link>
+              </div>
+
+              <div className="space-y-4">
+                {recentTasks.length > 0 ? (
+                  recentTasks.map((task) => (
+                    <div key={task.id} className="group bg-slate-800/80 hover:bg-slate-700/80 p-4 rounded-xl border border-slate-600/50 transition-all duration-200">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <button
+                            onClick={() => toggleTaskCompletion(task.id)}
+                            className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                              task.completed 
+                                ? 'bg-emerald-500 border-emerald-500' 
+                                : 'border-slate-400 hover:border-blue-400'
+                            }`}
+                          >
+                            {task.completed && <CheckCircle size={14} className="text-white" />}
+                          </button>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`font-medium leading-tight ${
+                              task.completed ? 'line-through text-slate-500' : 'text-white'
+                            }`}>
+                              {task.title}
+                            </h3>
+                            {task.description && (
+                              <p className={`text-sm mt-1 leading-relaxed ${
+                                task.completed ? 'line-through text-slate-600' : 'text-slate-400'
+                              }`}>
+                                {task.description}
+                              </p>
+                            )}
+                            
+                            {/* Tags and Due Date */}
+                            <div className="flex items-center gap-3 mt-3">
+                              {task.dueDate && (
+                                <div className="flex items-center text-xs text-rose-400">
+                                  <CalendarDays size={12} className="mr-1" />
+                                  <span>{formatSimpleDate(task.dueDate)}</span>
+                                </div>
+                              )}
+                              
+                              {task.priority && (
+                                <span className={`px-2 py-1 text-xs rounded-full font-medium ${priorityStyles[task.priority]}`}>
+                                  {task.priority}
+                                </span>
+                              )}
+                              
+                              {task.category && (
+                                <span className={`px-2 py-1 text-xs rounded-full font-medium ${categoryStyles[task.category]}`}>
+                                  {task.category}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => handleEditTask(task)} 
+                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg transition-colors"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button 
+                            onClick={() => deleteTask(task.id)} 
+                            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-600 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <TrendingUp size={48} className="mx-auto text-slate-600 mb-4" />
+                    <p className="text-slate-400 text-lg">No recent tasks</p>
+                    <p className="text-slate-500 text-sm">Create your first task to get started</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Upcoming Tasks */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-white">Upcoming Tasks</h2>
-              <Link href="/tasks" className="text-sm text-blue-400 hover:text-blue-300">
-                View all
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {upcomingTasks.length > 0 ? (
-                upcomingTasks.map((task) => (
-                  <div key={task.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <input 
-                          type="checkbox" 
-                          checked={task.completed} 
-                          onChange={() => toggleTaskCompletion(task.id)} 
-                          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 cursor-pointer" 
-                        />
-                        <div>
-                          <h3 className={`font-medium ${
-                            task.completed ? 'line-through text-gray-500' : 'text-white'
-                          }`}>
-                            {task.title}
-                          </h3>
-                          <p className={`text-sm mt-1 ${
-                            task.completed ? 'line-through text-gray-600' : 'text-gray-400'
-                          }`}>
-                            {task.description}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => handleEditTask(task)} 
-                          className="text-gray-400 hover:text-white transition-colors"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button 
-                          onClick={() => deleteTask(task.id)} 
-                          className="text-gray-400 hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4 text-xs">
-                      {task.dueDate && (
-                        <div className="flex items-center text-red-400">
-                          <CalendarDays size={12} className="mr-1" />
-                          <span>{formatDate(task.dueDate)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center space-x-2">
-                        {task.priority && (
-                          <span className={`px-2 py-1 text-xs rounded-md font-medium ${priorityStyles[task.priority]}`}>
-                            {task.priority}
-                          </span>
-                        )}
-                        {task.category && (
-                          <span className={`px-2 py-1 text-xs rounded-md font-medium ${categoryStyles[task.category]}`}>
-                            {task.category}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center text-xs text-gray-500 mt-3 pt-3 border-t border-slate-700">
-                      <Clock size={10} className="mr-1" />
-                      <span>Created {formatDate(task.createdAt)}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-10 bg-slate-800 rounded-xl border border-slate-700">
-                  <p className="text-gray-400">No upcoming tasks</p>
+          {/* Upcoming Tasks Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-amber-500/10 rounded-lg">
+                  <Target size={20} className="text-amber-400" />
                 </div>
-              )}
+                <h2 className="text-xl font-semibold text-white">Up Next</h2>
+              </div>
+
+              <div className="space-y-3">
+                {upcomingTasks.length > 0 ? (
+                  upcomingTasks.map((task) => (
+                    <div key={task.id} className="group bg-slate-800/80 hover:bg-slate-700/80 p-4 rounded-xl border border-slate-600/50 transition-all duration-200">
+                      <div className="flex items-start gap-3">
+                        <button
+                          onClick={() => toggleTaskCompletion(task.id)}
+                          className="mt-1 w-4 h-4 rounded-full border-2 border-slate-400 hover:border-blue-400 transition-colors"
+                        />
+                        
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-white text-sm leading-tight">
+                            {task.title}
+                          </h4>
+                          
+                          {task.dueDate && (
+                            <div className="flex items-center text-xs text-rose-400 mt-2">
+                              <Clock size={10} className="mr-1" />
+                              <span>{formatSimpleDate(task.dueDate)}</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2 mt-2">
+                            {task.priority && (
+                              <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${priorityStyles[task.priority]}`}>
+                                {task.priority}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => handleEditTask(task)} 
+                            className="p-1 text-slate-400 hover:text-white transition-colors"
+                          >
+                            <Pencil size={12} />
+                          </button>
+                          <button 
+                            onClick={() => deleteTask(task.id)} 
+                            className="p-1 text-slate-400 hover:text-rose-400 transition-colors"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Target size={32} className="mx-auto text-slate-600 mb-3" />
+                    <p className="text-slate-400">No upcoming tasks</p>
+                    <p className="text-slate-500 text-xs mt-1">You're all caught up!</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
