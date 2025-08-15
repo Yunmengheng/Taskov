@@ -23,11 +23,17 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
 
   const handleSignOut = () => {
-    logout();
-    router.push('/Login');
+    console.log('Logout button clicked'); // Add this for debugging
+    try {
+      signOut(); // Use signOut instead of logout
+      console.log('SignOut function called'); // Add this for debugging
+      router.push('/Login');
+    } catch (error) {
+      console.error('Error during signOut:', error);
+    }
   };
 
   const menuItems = [

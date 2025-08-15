@@ -16,42 +16,6 @@ interface KanbanColumn {
 const KanbanBoard: React.FC = () => {
   const { tasks, updateTask, deleteTask, addTask } = useTask();
 
-  // Add sample tasks if none exist
-  React.useEffect(() => {
-    if (tasks.length === 0) {
-      // Add sample tasks
-      const task1 = addTask({
-        title: "Read",
-        description: "dada",
-        priority: "low",
-        category: "work",
-        dueDate: "2025-07-16T14:02:00.000Z"
-      });
-      
-      const task2 = addTask({
-        title: "Run", 
-        description: "dadad",
-        priority: "medium",
-        category: "personal",
-        dueDate: "2025-08-01T12:01:00.000Z"
-      });
-
-      const task3 = addTask({
-        title: "Sleep",
-        description: "adada", 
-        priority: "high",
-        category: "study",
-        dueDate: "2025-01-01T10:01:00.000Z"
-      });
-
-      // Set one task to completed and one to in progress
-      setTimeout(() => {
-        updateTask(task3.id, { completed: true });
-        updateTask(task2.id, { inProgress: true });
-      }, 100);
-    }
-  }, [tasks.length, addTask, updateTask]);
-
   // Group tasks by status
   const getTasksByStatus = (status: KanbanStatus) => {
     switch (status) {
