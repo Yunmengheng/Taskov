@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts';
+import StatCards from "@/components/dashboard/StatCards";
 
 const Analytics: React.FC = () => {
   const { tasks } = useTask();
@@ -131,40 +132,8 @@ const Analytics: React.FC = () => {
           <p className="text-gray-400 text-sm">View statistics and insights about your tasks</p>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl text-white">
-            <div className="flex items-center justify-between mb-4">
-              <Target size={24} className="text-blue-200" />
-            </div>
-            <div className="text-3xl font-bold mb-1">{totalTasks}</div>
-            <div className="text-blue-200 text-sm">Total Tasks</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-600 to-green-700 p-6 rounded-xl text-white">
-            <div className="flex items-center justify-between mb-4">
-              <CheckCircle2 size={24} className="text-green-200" />
-            </div>
-            <div className="text-3xl font-bold mb-1">{completedTasks}</div>
-            <div className="text-green-200 text-sm">Completed</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-yellow-600 to-orange-600 p-6 rounded-xl text-white">
-            <div className="flex items-center justify-between mb-4">
-              <Clock size={24} className="text-yellow-200" />
-            </div>
-            <div className="text-3xl font-bold mb-1">{pendingTasks}</div>
-            <div className="text-yellow-200 text-sm">Pending</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-red-600 to-red-700 p-6 rounded-xl text-white">
-            <div className="flex items-center justify-between mb-4">
-              <AlertCircle size={24} className="text-red-200" />
-            </div>
-            <div className="text-3xl font-bold mb-1">{overdueTasks}</div>
-            <div className="text-red-200 text-sm">Overdue</div>
-          </div>
-        </div>
+        {/* Key Metrics - Using StatCards component */}
+        <StatCards />
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
