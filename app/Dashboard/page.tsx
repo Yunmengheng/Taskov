@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTask, type Task } from "@/contexts/TaskContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { RoleGuard } from "@/components/RoleGuard";
+import { canUserAccessTask } from "@/lib/permissions";
+import { UserRole } from "@/types/user";
 import StatCards from "@/components/dashboard/StatCards";
 import TaskForm from "@/components/tasks/TaskForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -16,30 +20,49 @@ import {
   CheckCircle,
   ArrowRight,
   Target,
-  TrendingUp
+  TrendingUp,
+  Shield
 } from "lucide-react";
 
 const Dashboard: React.FC = () => {
   const { tasks, deleteTask, toggleTaskCompletion, loading } = useTask();
   const { user } = useAuth();
+  const { userRole, hasPermission, isAdmin } = usePermissions();
 
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editTask, setEditTask] = useState<Task | null>(null);
 
-  // Get recent tasks (latest createdAt)
-  const recentTasks: Task[] = [...tasks]
+  // Filter tasks based on user role and permissions
+  const userTasks = tasks.filter(task => 
+    canUserAccessTask(userRole, task.userId || '', user?.id || '')
+  );
+
+  // Get recent tasks (latest createdAt) - filtered by permissions
+  const recentTasks: Task[] = [...userTasks]
     .sort((a: Task, b: Task) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
-  // Get upcoming tasks (nearest dueDate and not completed)
-  const upcomingTasks: Task[] = tasks
+  // Get upcoming tasks (nearest dueDate and not completed) - filtered by permissions
+  const upcomingTasks: Task[] = userTasks
     .filter((task: Task) => !task.completed && !!task.dueDate)
     .sort((a: Task, b: Task) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime())
     .slice(0, 3);
 
   const handleEditTask = (task: Task) => {
+    // Check if user can edit this specific task
+    if (!canUserAccessTask(userRole, task.userId || '', user?.id || '')) {
+      return;
+    }
     setEditTask(task);
     setShowTaskForm(true);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task && !canUserAccessTask(userRole, task.userId || '', user?.id || '')) {
+      return;
+    }
+    deleteTask(taskId);
   };
 
   const closeForm = () => {
@@ -81,9 +104,10 @@ const Dashboard: React.FC = () => {
   
   useEffect(() => {
     console.log('🔍 Dashboard: User:', user?.email || 'No user');
-    console.log('🔍 Dashboard: Tasks count:', tasks.length);
+    console.log('🔍 Dashboard: User Role:', userRole);
+    console.log('🔍 Dashboard: Tasks count:', userTasks.length);
     console.log('🔍 Dashboard: Loading:', loading);
-  }, [user, tasks, loading]);
+  }, [user, userTasks, loading, userRole]);
 
   if (loading) {
     return (
@@ -98,27 +122,57 @@ const Dashboard: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="w-full px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Welcome Header */}
+        {/* Welcome Header with Role Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Welcome back, {user?.email?.split('@')[0] || 'User'}
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-white">
+                Welcome back, {user?.email?.split('@')[0] || 'User'}
+              </h1>
+              <div className="flex items-center gap-1 px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-sm">
+                <Shield size={14} />
+                {userRole.toUpperCase()}
+              </div>
+            </div>
             <p className="text-slate-400">
               Here's what's happening with your tasks today
             </p>
           </div>
-          <button
-            onClick={() => setShowTaskForm(true)}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors shadow-lg hover:shadow-xl"
-          >
-            <PlusIcon size={20} className="mr-2" />
-            Create Task
-          </button>
+          
+          <RoleGuard requiredPermission="canCreate">
+            <button
+              onClick={() => setShowTaskForm(true)}
+              className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors shadow-lg hover:shadow-xl"
+            >
+              <PlusIcon size={20} className="mr-2" />
+              Create Task
+            </button>
+          </RoleGuard>
         </div>
 
         {/* Stats Cards */}
         <StatCards />
+
+        {/* Admin Panel Link */}
+        <RoleGuard allowedRoles={[UserRole.ADMIN]}>
+          <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield size={20} className="text-purple-400" />
+                <div>
+                  <h3 className="text-white font-medium">Admin Panel</h3>
+                  <p className="text-slate-400 text-sm">Manage users and system settings</p>
+                </div>
+              </div>
+              <Link 
+                href="/admin" 
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              >
+                Access Admin Panel
+              </Link>
+            </div>
+          </div>
+        </RoleGuard>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -132,6 +186,11 @@ const Dashboard: React.FC = () => {
                     <TrendingUp size={20} className="text-blue-400" />
                   </div>
                   <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
+                  {isAdmin && (
+                    <span className="text-xs text-slate-400">
+                      (Showing {hasPermission('canViewAll') ? 'all' : 'your'} tasks)
+                    </span>
+                  )}
                 </div>
                 <Link 
                   href="/tasks" 
@@ -197,20 +256,25 @@ const Dashboard: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Action Buttons */}
+                        {/* Action Buttons with Role Guards */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => handleEditTask(task)} 
-                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg transition-colors"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button 
-                            onClick={() => deleteTask(task.id)} 
-                            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-600 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <RoleGuard requiredPermission="canEdit">
+                            <button 
+                              onClick={() => handleEditTask(task)} 
+                              className="p-2 text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg transition-colors"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                          </RoleGuard>
+                          
+                          <RoleGuard requiredPermission="canDelete">
+                            <button 
+                              onClick={() => handleDeleteTask(task.id)} 
+                              className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-600 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </RoleGuard>
                         </div>
                       </div>
                     </div>
@@ -219,7 +283,9 @@ const Dashboard: React.FC = () => {
                   <div className="text-center py-12">
                     <TrendingUp size={48} className="mx-auto text-slate-600 mb-4" />
                     <p className="text-slate-400 text-lg">No recent tasks</p>
-                    <p className="text-slate-500 text-sm">Create your first task to get started</p>
+                    <p className="text-slate-500 text-sm">
+                      {hasPermission('canCreate') ? 'Create your first task to get started' : 'No tasks available'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -268,18 +334,23 @@ const Dashboard: React.FC = () => {
                         </div>
                         
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => handleEditTask(task)} 
-                            className="p-1 text-slate-400 hover:text-white transition-colors"
-                          >
-                            <Pencil size={12} />
-                          </button>
-                          <button 
-                            onClick={() => deleteTask(task.id)} 
-                            className="p-1 text-slate-400 hover:text-rose-400 transition-colors"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                          <RoleGuard requiredPermission="canEdit">
+                            <button 
+                              onClick={() => handleEditTask(task)} 
+                              className="p-1 text-slate-400 hover:text-white transition-colors"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                          </RoleGuard>
+                          
+                          <RoleGuard requiredPermission="canDelete">
+                            <button 
+                              onClick={() => handleDeleteTask(task.id)} 
+                              className="p-1 text-slate-400 hover:text-rose-400 transition-colors"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </RoleGuard>
                         </div>
                       </div>
                     </div>
@@ -297,8 +368,10 @@ const Dashboard: React.FC = () => {
 
         </div>
 
-        {/* Task Form Modal */}
-        {showTaskForm && <TaskForm onClose={closeForm} editTask={editTask} />}
+        {/* Task Form Modal - Only show if user has create permission */}
+        <RoleGuard requiredPermission="canCreate">
+          {showTaskForm && <TaskForm onClose={closeForm} editTask={editTask} />}
+        </RoleGuard>
       </div>
     </DashboardLayout>
   );
