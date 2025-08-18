@@ -2,11 +2,18 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useTask, Task } from "@/contexts/TaskContext";
+import { useAuth } from '@/contexts/AuthContext';
 
 const isoDate = (d: Date) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString();
 
 const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ onClose, editTask }) => {
   const { addTask, updateTask } = useTask();
+  const { user } = useAuth();
+  
+  // Add this debug line
+  console.log('🔍 TaskForm - useTask context:', { addTask, updateTask });
+  console.log('🔍 Current user:', user?.email);
+  
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<string | "">("");
@@ -35,7 +42,7 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
 
   const isEdit = !!editTask;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
@@ -47,24 +54,38 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
       dueDateTimeISO = dateTime.toISOString();
     }
 
-    if (isEdit && editTask) {
-      updateTask(editTask.id, {
-        title: title.trim(),
-        description: description.trim(),
-        dueDate: dueDateTimeISO,
-        priority: priority as any,
-        category: category as any,
-      });
-    } else {
-      addTask({
-        title: title.trim(),
-        description: description.trim(),
-        dueDate: dueDateTimeISO,
-        priority: priority as any,
-        category: category as any,
-      });
+    console.log('🔍 Submitting task:', {
+      title: title.trim(),
+      description: description.trim(),
+      dueDate: dueDateTimeISO,
+      priority,
+      category,
+    });
+
+    try {
+      if (isEdit && editTask) {
+        const result = await updateTask(editTask.id, {
+          title: title.trim(),
+          description: description.trim(),
+          dueDate: dueDateTimeISO,
+          priority: priority as any,
+          category: category as any,
+        });
+        console.log('✅ Update task result:', result);
+      } else {
+        const result = await addTask({
+          title: title.trim(),
+          description: description.trim(),
+          dueDate: dueDateTimeISO,
+          priority: priority as any,
+          category: category as any,
+        });
+        console.log('✅ Add task result:', result);
+      }
+      onClose();
+    } catch (error) {
+      console.error('❌ Error submitting task:', error);
     }
-    onClose();
   };
 
   return (

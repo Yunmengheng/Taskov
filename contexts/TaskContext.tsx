@@ -67,8 +67,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     completed: dbTask.status === 'completed',
     dueDate: dbTask.due_date,
     createdAt: dbTask.created_at,
-    completedAt: dbTask.completed_at, // Map completed_at to completedAt
-    inProgress: dbTask.status === 'in_progress'
+    completedAt: dbTask.completed_at,
+    inProgress: dbTask.status === 'in_progress',
+    userId: dbTask.assigned_to // Add this missing field
   });
 
   const loadTasks = async () => {
@@ -96,28 +97,40 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addTask = async (input: TaskInput): Promise<Task | null> => {
     if (!user) return null;
 
+    console.log('🔍 Adding task with user:', user.id);
+    console.log('🔍 Task input:', input);
+
     try {
+      const taskData = {
+        title: input.title.trim(),
+        description: input.description?.trim() || '',
+        status: 'pending' as Status,
+        priority: input.priority || 'medium',
+        category: input.category || 'personal', // Changed from 'work' to 'personal'
+        due_date: input.dueDate,
+        assigned_to: user.id
+      };
+
+      console.log('🔍 Inserting task data:', taskData);
+
       const { data, error } = await supabase
         .from('tasks')
-        .insert([{
-          title: input.title.trim(),
-          description: input.description?.trim() || '',
-          status: 'pending' as Status,
-          priority: input.priority || 'medium',
-          category: input.category || 'work',
-          due_date: input.dueDate,
-          assigned_to: user.id
-        }])
+        .insert([taskData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database insert error:', error);
+        throw error;
+      }
+
+      console.log('✅ Task inserted successfully:', data);
 
       const newTask = transformTask(data);
       setTasks(prev => [newTask, ...prev]);
       return newTask;
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('❌ Error adding task:', error);
       return null;
     }
   };
