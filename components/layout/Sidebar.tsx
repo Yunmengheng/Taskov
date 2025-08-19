@@ -8,20 +8,13 @@ import {
   LayoutDashboard, 
   CheckSquare, 
   Calendar,
-  FileText,
   BarChart3,
   Settings,
-  Menu,
   LogOut,
   Columns3
 } from "lucide-react";
 
-interface SidebarProps {
-  isCollapsed?: boolean;
-  onToggle?: () => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
+const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();

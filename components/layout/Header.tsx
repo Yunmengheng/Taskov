@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sun, Moon, User } from "lucide-react";
+import { Sun, User } from "lucide-react";
 
 interface HeaderProps {
   title?: string;
