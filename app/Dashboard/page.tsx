@@ -70,18 +70,6 @@ const Dashboard: React.FC = () => {
     setEditTask(null);
   };
   
-  // Helper for formatting dates
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      month: "short", 
-      day: "numeric", 
-      year: "numeric",
-      hour: "numeric", 
-      minute: "2-digit", 
-      hour12: true,
-    });
-  };
-
   const formatSimpleDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short", 
@@ -135,7 +123,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <p className="text-slate-400">
-              Here's what's happening with your tasks today
+              Here&apos;s what&apos;s happening with your tasks today
             </p>
           </div>
           
@@ -359,7 +347,7 @@ const Dashboard: React.FC = () => {
                   <div className="text-center py-8">
                     <Target size={32} className="mx-auto text-slate-600 mb-3" />
                     <p className="text-slate-400">No upcoming tasks</p>
-                    <p className="text-slate-500 text-xs mt-1">You're all caught up!</p>
+                    <p className="text-slate-500 text-xs mt-1">You&apos;re all caught up!</p>
                   </div>
                 )}
               </div>

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MoonIcon, SunIcon, LockIcon, MailIcon, UserIcon } from 'lucide-react';
@@ -16,10 +15,9 @@ const Signup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'facebook' | null>(null);
 
-  // Fix: Use the correct method names from AuthContext
-  const { signUp, signIn } = useAuth();
+  // Fix: Use only the methods we actually need from AuthContext
+  const { signUp } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
