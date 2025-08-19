@@ -92,7 +92,14 @@ const LandingPage: React.FC = () => {
             <div className="md:w-1/2">
               <div className="relative">
                 <div className="absolute inset-0 bg-gray-800 rounded-xl transform rotate-3"></div>
-                <img src="https://images.unsplash.com/photo-1540350394557-8d14678e7f91?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Task Management Dashboard" className="relative z-10 rounded-xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500" />
+                {/* Replace Image with gradient placeholder */}
+                <div className="relative z-10 rounded-xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 bg-gradient-to-br from-blue-600 to-purple-600 w-full h-96 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <KanbanIcon size={64} className="mx-auto mb-4" />
+                    <p className="text-xl font-semibold">Dashboard Preview</p>
+                    <p className="text-sm opacity-75">Task Management Interface</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -123,7 +130,7 @@ const LandingPage: React.FC = () => {
               { icon: CheckSquareIcon, title: 'Task Management', description: 'Create, organize, and track tasks with ease. Set priorities, due dates, and categories to stay on top of your work.' },
               { icon: CalendarIcon, title: 'Calendar View', description: 'View your tasks in a calendar format. Get a clear picture of your schedule and deadlines at a glance.' },
               { icon: BarChart3Icon, title: 'Analytics', description: 'Track your productivity with detailed analytics. Understand your work patterns and improve your efficiency.' },
-              { icon: TagIcon, title: 'Task Categorization', description: 'Organize tasks by categories and tags. Filter and sort to find exactly what you\'re looking for.' },
+              { icon: TagIcon, title: 'Task Categorization', description: 'Organize tasks by categories and tags. Filter and sort to find exactly what you&apos;re looking for.' },
               { icon: ClockIcon, title: 'Time Tracking', description: 'Monitor time spent on tasks. Set due dates and get notified about upcoming deadlines.' },
             ].map((feature, index) => (
               <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700 transition-all hover:border-blue-500/50 hover:shadow-xl">
@@ -173,7 +180,7 @@ const LandingPage: React.FC = () => {
                 <span className="text-2xl font-bold text-blue-500">3</span>
               </div>
               <h3 className="text-xl font-semibold mb-2 text-white">Manage & Complete</h3>
-              <p className="text-gray-400">Track progress, update statuses, and mark tasks as complete when you're done.</p>
+              <p className="text-gray-400">Track progress, update statuses, and mark tasks as complete when you&apos;re done.</p>
             </div>
           </div>
         </div>
@@ -188,13 +195,16 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { name: 'Sarah Johnson', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80' },
-              { name: 'Michael Chen', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80' },
-              { name: 'Emma Rodriguez', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80' },
+              { name: 'Sarah Johnson', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."' },
+              { name: 'Michael Chen', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."' },
+              { name: 'Emma Rodriguez', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."' },
             ].map((testimonial, index) => (
               <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <div className="flex items-center mb-4">
-                  <img src={testimonial.img} alt={testimonial.name} className="w-12 h-12 rounded-full object-cover" />
+                  {/* Replace Image with avatar placeholder using first letter */}
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
+                    {testimonial.name.charAt(0)}
+                  </div>
                   <div className="ml-4">
                     <h4 className="text-lg font-semibold text-white">{testimonial.name}</h4>
                     <p className="text-gray-400">{testimonial.title}</p>
