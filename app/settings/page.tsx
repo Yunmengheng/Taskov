@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { 
-  Settings as SettingsIcon, 
   User, 
   Bell, 
   Shield, 
@@ -13,20 +12,16 @@ import {
   Home,
   Calendar,
   BarChart3,
-  Save,
   Moon,
   Sun,
-  Volume2,
-  VolumeX,
   Eye,
-  EyeOff
 } from "lucide-react";
 
 const Settings: React.FC = () => {
-  const { currentUser, logout } = useAuth();
-  
-  // Settings state
-  const [settings, setSettings] = useState({
+  const { user, signOut } = useAuth();
+
+  // Static display data - no state management needed
+  const displaySettings = {
     notifications: {
       email: true,
       push: false,
@@ -41,48 +36,16 @@ const Settings: React.FC = () => {
     privacy: {
       profileVisible: true,
       shareAnalytics: false
-    },
-    sounds: {
-      enabled: true,
-      volume: 50
     }
-  });
-
-  const [profileData, setProfileData] = useState({
-    name: currentUser?.name || '',
-    email: currentUser?.email || '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const handleSettingChange = (category: string, setting: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category as keyof typeof prev],
-        [setting]: value
-      }
-    }));
   };
 
-  const handleProfileChange = (field: string, value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const displayProfile = {
+    name: user?.email?.split('@')[0] || 'User',
+    email: user?.email || 'user@example.com'
   };
 
-  const handleSaveSettings = () => {
-    // Here you would typically save settings to backend
-    console.log('Saving settings:', settings);
-    alert('Settings saved successfully!');
-  };
-
-  const handleProfileUpdate = () => {
-    // Here you would typically update profile on backend
-    console.log('Updating profile:', profileData);
-    alert('Profile updated successfully!');
+  const handleSignOut = () => {
+    signOut();
   };
 
   return (
@@ -107,20 +70,13 @@ const Settings: React.FC = () => {
               </Link>
             </div>
           </div>
-          <button
-            onClick={handleSaveSettings}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Save size={16} className="mr-2" />
-            Save Changes
-          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Settings */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Profile Information */}
+            {/* Profile Information - Display Only */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <div className="flex items-center mb-6">
                 <User size={20} className="text-blue-400 mr-2" />
@@ -130,78 +86,36 @@ const Settings: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                  <input
-                    type="text"
-                    value={profileData.name}
-                    onChange={(e) => handleProfileChange('name', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  />
+                  <div className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-300">
+                    {displayProfile.name}
+                  </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => handleProfileChange('email', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  />
+                  <div className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-300">
+                    {displayProfile.email}
+                  </div>
                 </div>
-                
-                <button
-                  onClick={handleProfileUpdate}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Update Profile
-                </button>
               </div>
             </div>
 
-            {/* Password Change */}
+            {/* Password Change - Display Only */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <div className="flex items-center mb-6">
                 <Shield size={20} className="text-green-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Change Password</h3>
+                <h3 className="text-lg font-semibold text-white">Password Settings</h3>
               </div>
               
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
-                  <input
-                    type="password"
-                    value={profileData.currentPassword}
-                    onChange={(e) => handleProfileChange('currentPassword', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  />
+                <div className="text-gray-300">
+                  <p className="text-sm">Password was last changed 30 days ago</p>
+                  <p className="text-xs text-gray-400 mt-1">For security, we recommend changing your password regularly</p>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">New Password</label>
-                  <input
-                    type="password"
-                    value={profileData.newPassword}
-                    onChange={(e) => handleProfileChange('newPassword', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
-                  <input
-                    type="password"
-                    value={profileData.confirmPassword}
-                    onChange={(e) => handleProfileChange('confirmPassword', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                
-                <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                  Update Password
-                </button>
               </div>
             </div>
 
-            {/* Notifications */}
+            {/* Notifications - Display Only */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <div className="flex items-center mb-6">
                 <Bell size={20} className="text-yellow-400 mr-2" />
@@ -209,18 +123,12 @@ const Settings: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                {Object.entries(settings.notifications).map(([key, value]) => (
+                {Object.entries(displaySettings.notifications).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
                     <span className="text-gray-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={value as boolean}
-                        onChange={(e) => handleSettingChange('notifications', key, e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div className={`w-11 h-6 rounded-full flex items-center ${value ? 'bg-blue-600' : 'bg-slate-600'}`}>
+                      <div className={`w-5 h-5 bg-white rounded-full transition-transform ${value ? 'translate-x-5' : 'translate-x-1'}`}></div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -230,7 +138,7 @@ const Settings: React.FC = () => {
           {/* Right Column */}
           <div className="space-y-6">
             
-            {/* Appearance */}
+            {/* Appearance - Display Only */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <div className="flex items-center mb-6">
                 <Palette size={20} className="text-purple-400 mr-2" />
@@ -242,48 +150,30 @@ const Settings: React.FC = () => {
                   <span className="text-gray-300">Theme</span>
                   <div className="flex items-center space-x-2">
                     <Sun size={16} className="text-gray-400" />
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.appearance.theme === 'dark'}
-                        onChange={(e) => handleSettingChange('appearance', 'theme', e.target.checked ? 'dark' : 'light')}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div className="w-11 h-6 bg-blue-600 rounded-full flex items-center">
+                      <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
+                    </div>
                     <Moon size={16} className="text-blue-400" />
                   </div>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Compact Mode</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.appearance.compactMode}
-                      onChange={(e) => handleSettingChange('appearance', 'compactMode', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                  <div className="w-11 h-6 bg-slate-600 rounded-full flex items-center">
+                    <div className="w-5 h-5 bg-white rounded-full translate-x-1"></div>
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Show Completed</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.appearance.showCompleted}
-                      onChange={(e) => handleSettingChange('appearance', 'showCompleted', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                  <div className="w-11 h-6 bg-blue-600 rounded-full flex items-center">
+                    <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Privacy */}
+            {/* Privacy - Display Only */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <div className="flex items-center mb-6">
                 <Eye size={20} className="text-orange-400 mr-2" />
@@ -293,28 +183,16 @@ const Settings: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Profile Visible</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.privacy.profileVisible}
-                      onChange={(e) => handleSettingChange('privacy', 'profileVisible', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                  <div className="w-11 h-6 bg-blue-600 rounded-full flex items-center">
+                    <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Share Analytics</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.privacy.shareAnalytics}
-                      onChange={(e) => handleSettingChange('privacy', 'shareAnalytics', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                  <div className="w-11 h-6 bg-slate-600 rounded-full flex items-center">
+                    <div className="w-5 h-5 bg-white rounded-full translate-x-1"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -323,11 +201,14 @@ const Settings: React.FC = () => {
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <h3 className="text-lg font-semibold text-white mb-4">Account Actions</h3>
               <div className="space-y-3">
-                <button className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                  Export Data
+                <button 
+                  disabled 
+                  className="w-full px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
+                >
+                  Export Data (Coming Soon)
                 </button>
                 <button 
-                  onClick={logout}
+                  onClick={handleSignOut}
                   className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Sign Out

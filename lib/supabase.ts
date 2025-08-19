@@ -12,20 +12,3 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export const getSupabase = () => {
   return supabase
 }
-
-const login = async (email: string, password: string): Promise<void> => {
-  const supabase = getSupabase();
-  if (!supabase) throw new Error('Supabase not initialized');
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-  
-  if (error) {
-    console.error('Login error:', error);
-    throw new Error(error.message);
-  }
-  
-  console.log('Login successful:', data);
-};

@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from "next/link";
-import { useTask } from "@/contexts/TaskContext";
+import { useTask, type Task } from "@/contexts/TaskContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import TaskForm from "@/components/tasks/TaskForm";
 import { 
   PlusIcon, 
   Search,
-  Filter,
   X,
   CalendarDays, 
   Clock, 
@@ -16,18 +14,6 @@ import {
   Trash2, 
   CheckCircle
 } from "lucide-react";
-
-// Add Task type interface if not imported
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  priority?: 'low' | 'medium' | 'high';
-  category?: 'work' | 'personal' | 'study';
-  dueDate?: string;
-  createdAt: string;
-}
 
 export default function ListView() {
   const { tasks, deleteTask, toggleTaskCompletion } = useTask();
@@ -298,7 +284,7 @@ export default function ListView() {
         {showTaskForm && (
           <TaskForm 
             onClose={closeForm} 
-            editTask={editTask as any} 
+            editTask={editTask} 
           />
         )}
       </div>
