@@ -2,17 +2,21 @@
 
 import React from "react";
 import { useTask, Task } from "@/contexts/TaskContext";
-import { Pencil, Trash2, CheckCircle2, Circle, Clock3, Tag } from "lucide-react";
+import { Pencil, Trash2, CheckCircle2, Circle, Clock3 } from "lucide-react";
 
 const chip = (text: string, color: string) => (
   <span className={`px-2 py-0.5 text-xs rounded-full ${color}`}>{text}</span>
 );
 
 const TaskItem: React.FC<{ task: Task; onEdit?: (t: Task) => void }> = ({ task, onEdit }) => {
-  const { toggleComplete, deleteTask } = useTask();
+  const { updateTask, deleteTask } = useTask();
   const due = task.dueDate ? new Date(task.dueDate) : null;
   const now = new Date();
   const overdue = !!due && !task.completed && due.getTime() < now.getTime();
+
+  const handleToggleComplete = () => {
+    updateTask(task.id, { ...task, completed: !task.completed });
+  };
 
   const dueBadge = due
     ? chip(
@@ -38,15 +42,19 @@ const TaskItem: React.FC<{ task: Task; onEdit?: (t: Task) => void }> = ({ task, 
         <div className="flex items-start gap-3">
           <button
             aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
-            onClick={() => toggleComplete(task.id)}
+            onClick={handleToggleComplete}
             className="mt-0.5 text-gray-400 hover:text-emerald-400"
           >
             {task.completed ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
           </button>
           <div>
-            <div className="font-semibold">{task.title}</div>
+            <div className={`font-semibold ${task.completed ? 'line-through text-gray-500' : ''}`}>
+              {task.title}
+            </div>
             {task.description && (
-              <div className="text-sm text-gray-300 mt-0.5">{task.description}</div>
+              <div className={`text-sm mt-0.5 ${task.completed ? 'line-through text-gray-500' : 'text-gray-300'}`}>
+                {task.description}
+              </div>
             )}
             <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-400">
               <span className="inline-flex items-center gap-1">

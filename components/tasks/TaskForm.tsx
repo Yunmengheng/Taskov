@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTask, Task } from "@/contexts/TaskContext";
 import { useAuth } from '@/contexts/AuthContext';
 
-const isoDate = (d: Date) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString();
+type Priority = 'low' | 'medium' | 'high';
+type Category = 'work' | 'study' | 'personal';
 
 const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ onClose, editTask }) => {
   const { addTask, updateTask } = useTask();
@@ -18,8 +19,8 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<string | "">("");
   const [dueTime, setDueTime] = useState<string | "">("");
-  const [priority, setPriority] = useState("medium");
-  const [category, setCategory] = useState("personal");
+  const [priority, setPriority] = useState<Priority>("medium");
+  const [category, setCategory] = useState<Category>("personal");
 
   useEffect(() => {
     if (editTask) {
@@ -35,8 +36,8 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
         setDueTime("");
       }
       
-      setPriority(editTask.priority || "medium");
-      setCategory(editTask.category || "personal");
+      setPriority((editTask.priority as Priority) || "medium");
+      setCategory((editTask.category as Category) || "personal");
     }
   }, [editTask]);
 
@@ -68,8 +69,8 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
           title: title.trim(),
           description: description.trim(),
           dueDate: dueDateTimeISO,
-          priority: priority as any,
-          category: category as any,
+          priority: priority,
+          category: category,
         });
         console.log('✅ Update task result:', result);
       } else {
@@ -77,8 +78,8 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
           title: title.trim(),
           description: description.trim(),
           dueDate: dueDateTimeISO,
-          priority: priority as any,
-          category: category as any,
+          priority: priority,
+          category: category,
         });
         console.log('✅ Add task result:', result);
       }
@@ -142,7 +143,7 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
               <label className="block text-sm font-medium mb-1">Priority</label>
               <select
                 value={priority}
-                onChange={(e) => setPriority(e.target.value)}
+                onChange={(e) => setPriority(e.target.value as Priority)}
                 className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="low" className="bg-slate-700 text-white">Low</option>
@@ -154,7 +155,7 @@ const TaskForm: React.FC<{ onClose: () => void; editTask?: Task | null }> = ({ o
               <label className="block text-sm font-medium mb-1">Category</label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => setCategory(e.target.value as Category)}
                 className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="work" className="bg-slate-700 text-white">Work</option>
