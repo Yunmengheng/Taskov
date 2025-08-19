@@ -1,21 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useTask } from "@/contexts/TaskContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { 
-  Calendar as CalendarIcon, 
-  ChevronLeft, 
-  ChevronRight, 
-  Home,
-  BarChart3,
-  Settings
-} from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 const Calendar: React.FC = () => {
   const { tasks } = useTask();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate] = useState(new Date());
 
   // Get tasks for calendar view
   const tasksWithDates = tasks.filter(task => task.dueDate);
@@ -28,25 +20,10 @@ const Calendar: React.FC = () => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(prev.getMonth() - 1);
-      } else {
-        newDate.setMonth(prev.getMonth() + 1);
-      }
-      return newDate;
-    });
-  };
-
   const getTasksForDate = (day: number) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return tasksWithDates.filter(task => task.dueDate?.startsWith(dateStr));
   };
-
-  const monthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"];
 
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDay = getFirstDayOfMonth(currentDate);
