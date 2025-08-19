@@ -1,51 +1,34 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useTask } from "@/contexts/TaskContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { 
-  BarChart3, 
   TrendingUp, 
-  Clock, 
-  Target,
-  Home,
-  Calendar,
-  Settings,
-  CheckCircle2,
-  AlertCircle
+  Target
 } from "lucide-react";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import StatCards from "@/components/dashboard/StatCards";
 
 const Analytics: React.FC = () => {
   const { tasks } = useTask();
 
+  // Memoize date calculations to avoid dependency issues
+  const oneWeekAgo = React.useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date;
+  }, []);
+
   // Calculate analytics
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(task => task.completed).length;
-  const pendingTasks = totalTasks - completedTasks;
-  const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0";
   
   // Tasks by priority
   const highPriorityTasks = tasks.filter(task => task.priority === 'high').length;
   const mediumPriorityTasks = tasks.filter(task => task.priority === 'medium').length;
   const lowPriorityTasks = tasks.filter(task => task.priority === 'low').length;
-  
-  // Tasks by category
-  const workTasks = tasks.filter(task => task.category === 'work').length;
-  const personalTasks = tasks.filter(task => task.category === 'personal').length;
-  const studyTasks = tasks.filter(task => task.category === 'study').length;
-  
-  // Overdue tasks
-  const overdueTasks = tasks.filter(task => {
-    if (!task.dueDate || task.completed) return false;
-    return new Date(task.dueDate) < new Date();
-  }).length;
 
   // Tasks created this week
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const recentTasks = tasks.filter(task => {
     try {
       return new Date(task.createdAt) >= oneWeekAgo;
@@ -80,32 +63,6 @@ const Analytics: React.FC = () => {
       { name: 'Other', completed: 0, pending: 0 }
     ];
   }, [tasks]);
-
-  const renderCustomizedLabel = React.useCallback((entry: any) => {
-    if (!entry || !entry.value || totalTasks === 0) return null;
-    
-    const RADIAN = Math.PI / 180;
-    const radius = entry.innerRadius + (entry.outerRadius - entry.innerRadius) * 0.7;
-    const x = entry.cx + radius * Math.cos(-entry.midAngle * RADIAN);
-    const y = entry.cy + radius * Math.sin(-entry.midAngle * RADIAN);
-    const percent = Math.round((entry.value / totalTasks) * 100);
-
-    if (percent < 5) return null; // Don't show label for very small slices
-
-    return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > entry.cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        fontSize="12"
-        fontWeight="bold"
-      >
-        {`${entry.name} ${percent}%`}
-      </text>
-    );
-  }, [totalTasks]);
 
   const completedThisWeek = React.useMemo(() => {
     return tasks.filter(task => {
@@ -151,7 +108,6 @@ const Analytics: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={renderCustomizedLabel}
                       outerRadius={100}
                       innerRadius={60}
                       fill="#8884d8"
