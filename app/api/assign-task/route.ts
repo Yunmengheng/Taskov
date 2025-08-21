@@ -2,22 +2,26 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const { userEmail, taskTitle, taskDeadline } = await request.json();
-
-  // Note: Use service_role key for admin-level access.
-  // Ensure this is set in your environment variables.
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  console.log(
-    'Service Key Loaded:',
-    serviceKey ? `Yes, starts with ${serviceKey.slice(0, 5)} and ends with ${serviceKey.slice(-5)}` : 'No'
-  );
-
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
   try {
+    const { userEmail, taskTitle, taskDeadline } = await request.json();
+
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!serviceKey) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY is not set');
+      return Response.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('NEXT_PUBLIC_SUPABASE_URL is not set');
+      return Response.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      serviceKey
+    );
+
     // 1. Find user by email (this should match an existing user)
     const { data: userData, error: userError } = await supabaseAdmin
       .from('profiles')
@@ -71,6 +75,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Task assigned successfully', assignment: assignmentData });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    console.error('API Error:', error);
+    return Response.json({ 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    }, { status: 500 });
   }
 }
