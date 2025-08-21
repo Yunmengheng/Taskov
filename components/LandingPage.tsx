@@ -91,14 +91,17 @@ const LandingPage: React.FC = () => {
             </div>
             <div className="md:w-1/2">
               <div className="relative">
-                <div className="absolute inset-0 bg-gray-800 rounded-xl transform rotate-3"></div>
-                {/* Replace Image with gradient placeholder */}
-                <div className="relative z-10 rounded-xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 bg-gradient-to-br from-blue-600 to-purple-600 w-full h-96 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <KanbanIcon size={64} className="mx-auto mb-4" />
-                    <p className="text-xl font-semibold">Dashboard Preview</p>
-                    <p className="text-sm opacity-75">Task Management Interface</p>
-                  </div>
+                {/* Background shadow element */}
+                <div className="absolute inset-0 bg-gray-800/50 rounded-xl transform rotate-3 blur-sm"></div>
+                {/* Main image container */}
+                <div className="relative z-10 rounded-xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden">
+                  <img 
+                    src="taskov.jpg" 
+                    alt="Task management notebooks and planning materials"
+                    className="w-full h-96 object-cover rounded-xl"
+                  />
+                  {/* Optional overlay for better text readability if needed */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
                 </div>
               </div>
             </div>
@@ -195,16 +198,17 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { name: 'Sarah Johnson', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."' },
-              { name: 'Michael Chen', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."' },
-              { name: 'Emma Rodriguez', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."' },
+              { name: 'Soun Vanputhika', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', image: '/puth.jpg' },
+              { name: 'B IC', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."', image: '/bdane.jpg' },
+              { name: 'Phan Nara', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."', image: '/phan.jpg' },
             ].map((testimonial, index) => (
               <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <div className="flex items-center mb-4">
-                  {/* Replace Image with avatar placeholder using first letter */}
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
-                    {testimonial.name.charAt(0)}
-                  </div>
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
+                  />
                   <div className="ml-4">
                     <h4 className="text-lg font-semibold text-white">{testimonial.name}</h4>
                     <p className="text-gray-400">{testimonial.title}</p>
