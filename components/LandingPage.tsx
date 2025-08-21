@@ -197,7 +197,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {[
-              { name: 'Soun Vanputhika', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', image: '/puth.jpg' },
+              { name: 'Suon Vannputhika', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', image: '/puth.jpg' },
               { name: 'B IC', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."', image: '/bdane.jpg' },
               { name: 'Phan Nara', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."', image: '/phan.jpg' },
             ].map((testimonial, index) => (
