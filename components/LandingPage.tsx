@@ -44,7 +44,7 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen flex flex-col bg-gray-900 text-gray-300">
+    <div className="min-h-screen w-full flex flex-col bg-gray-900 text-gray-300">
       {/* Header */}
       <header className="bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,11 +55,11 @@ const LandingPage: React.FC = () => {
                 Task Manager
               </span>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/Login" className="text-gray-300 hover:text-white font-medium transition-colors">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/Login" className="text-gray-300 hover:text-white font-medium transition-colors text-sm sm:text-base">
                 Sign In
               </Link>
-              <Link href="/Signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300">
+              <Link href="/Signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 sm:px-4 rounded-lg transition-colors duration-300 text-sm sm:text-base">
                 Get Started
               </Link>
             </div>
@@ -68,29 +68,29 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative flex items-center bg-gray-900 py-16 flex-1 min-h-[calc(100vh-4rem)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="md:w-1/2 mb-10 md:mb-0 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+      <section ref={heroRef} className="relative flex flex-col md:flex-row items-center bg-gray-900 py-10 md:py-16 flex-1 min-h-[calc(100vh-4rem)]">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
+            <div className="md:w-1/2 mb-8 md:mb-0 text-center md:text-left">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
                 Manage Your Tasks <br />
                 <span className="text-blue-500">Simply & Effectively</span>
               </h1>
-              <p className="text-lg text-gray-400 mb-8 max-w-lg mx-auto md:mx-0">
+              <p className="text-base sm:text-lg text-gray-400 mb-8 max-w-lg mx-auto md:mx-0">
                 An intuitive task management platform that helps you organize,
                 prioritize, and complete your tasks with ease.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow-lg">
+                <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow-lg w-full sm:w-auto">
                   Get Started Free
                 </Link>
-                <Link href="/login" className="border-2 border-gray-700 text-gray-300 hover:bg-gray-800 font-medium py-3 px-8 rounded-lg">
+                <Link href="/login" className="border-2 border-gray-700 text-gray-300 hover:bg-gray-800 font-medium py-3 px-8 rounded-lg w-full sm:w-auto">
                   Sign In
                 </Link>
               </div>
             </div>
-            <div className="md:w-1/2">
-              <div className="relative">
+            <div className="md:w-1/2 w-full">
+              <div className="relative w-full">
                 {/* Background shadow element */}
                 <div className="absolute inset-0 bg-gray-800/50 rounded-xl transform rotate-3 blur-sm"></div>
                 {/* Main image container */}
@@ -98,9 +98,8 @@ const LandingPage: React.FC = () => {
                   <img 
                     src="taskov.jpg" 
                     alt="Task management notebooks and planning materials"
-                    className="w-full h-96 object-cover rounded-xl"
+                    className="w-full h-64 sm:h-80 md:h-96 object-cover rounded-xl"
                   />
-                  {/* Optional overlay for better text readability if needed */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
                 </div>
               </div>
@@ -117,17 +116,17 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section ref={featuresRef} className="py-20 scroll-mt-16 bg-gray-900" id="features">
+      <section ref={featuresRef} className="py-16 sm:py-20 scroll-mt-16 bg-gray-900" id="features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
               Powerful Features
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto">
               Our task management platform offers everything you need to stay organized and productive.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[
               { icon: KanbanIcon, title: 'Kanban Board', description: 'Visualize your workflow with a customizable Kanban board. Drag and drop tasks between columns to update their status.' },
               { icon: CheckSquareIcon, title: 'Task Management', description: 'Create, organize, and track tasks with ease. Set priorities, due dates, and categories to stay on top of your work.' },
@@ -136,14 +135,14 @@ const LandingPage: React.FC = () => {
               { icon: TagIcon, title: 'Task Categorization', description: 'Organize tasks by categories and tags. Filter and sort to find exactly what you&apos;re looking for.' },
               { icon: ClockIcon, title: 'Time Tracking', description: 'Monitor time spent on tasks. Set due dates and get notified about upcoming deadlines.' },
             ].map((feature, index) => (
-              <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700 transition-all hover:border-blue-500/50 hover:shadow-xl">
+              <div key={index} className="bg-gray-800 p-6 sm:p-8 rounded-lg border border-gray-700 transition-all hover:border-blue-500/50 hover:shadow-xl">
                 <div className="p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6 bg-blue-900/30">
                   <feature.icon className="w-7 h-7 text-blue-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-white">
+                <h3 className="text-lg sm:text-xl font-semibold mb-3 text-white">
                   {feature.title}
                 </h3>
-                <p className="text-gray-400">
+                <p className="text-gray-400 text-sm sm:text-base">
                   {feature.description}
                 </p>
               </div>
@@ -153,15 +152,15 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gray-800">
+      <section className="py-16 sm:py-20 bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">How It Works</h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">How It Works</h2>
+            <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto">
               Get started with our task management platform in just a few simple steps.
             </p>
           </div>
-          <div className="flex flex-col md:flex-row items-center justify-center space-y-12 md:space-y-0 md:space-x-8">
+          <div className="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 md:space-x-8">
             <div className="flex flex-col items-center text-center max-w-xs">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gray-900 border border-gray-700">
                 <span className="text-2xl font-bold text-blue-500">1</span>
@@ -190,13 +189,13 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-gray-900">
+      <section className="py-16 sm:py-20 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">What Our Users Say</h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">Join thousands of satisfied users who have transformed their productivity.</p>
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">What Our Users Say</h2>
+            <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto">Join thousands of satisfied users who have transformed their productivity.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {[
               { name: 'Soun Vanputhika', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', image: '/puth.jpg' },
               { name: 'B IC', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."', image: '/bdane.jpg' },
@@ -224,17 +223,17 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gray-800">
+      <section className="py-16 sm:py-20 bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">Ready to Get Started?</h2>
-          <p className="text-xl text-gray-400 mb-10 max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Ready to Get Started?</h2>
+          <p className="text-base sm:text-xl text-gray-400 mb-8 sm:mb-10 max-w-3xl mx-auto">
             Join thousands of users who have already transformed their productivity with our task management platform.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 shadow-lg">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+            <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 shadow-lg w-full sm:w-auto">
               Sign Up Free
             </Link>
-            <Link href="/login" className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-medium py-3 px-8 rounded-lg transition-colors duration-300">
+            <Link href="/login" className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 w-full sm:w-auto">
               Sign In
             </Link>
           </div>
@@ -242,9 +241,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 py-12">
+      <footer className="bg-gray-900 py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
             <div>
               <div className="flex items-center mb-4">
                 <KanbanIcon size={20} className="text-blue-500" />
@@ -279,8 +278,8 @@ const LandingPage: React.FC = () => {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-700 pt-8">
-            <p className="text-center text-gray-500 text-sm">
+          <div className="border-t border-gray-700 pt-6 sm:pt-8">
+            <p className="text-center text-gray-500 text-xs sm:text-sm">
               © {new Date().getFullYear()} Task Manager. All rights reserved.
             </p>
           </div>
