@@ -63,17 +63,41 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: usersData, error: usersError } = await supabase.from('profiles').select('id, name, email, role');
-      if (usersError) throw usersError;
+      // Fetch ALL users (remove any filters)
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('id, name, email, role');
+      
+      if (usersError) {
+        console.error('Users error:', usersError);
+        throw usersError;
+      }
       setUsers(usersData || []);
+      console.log("Fetched users:", usersData);
 
-      const { data: tasksData, error: tasksError } = await supabase.from('tasks').select('id, title, description, priority, status');
-      if (tasksError) throw tasksError;
+      // Fetch ALL tasks (remove any filters)
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('tasks')
+        .select('id, title, description, priority, status');
+      
+      if (tasksError) {
+        console.error('Tasks error:', tasksError);
+        throw tasksError;
+      }
       setTasks(tasksData || []);
+      console.log("Fetched tasks:", tasksData);
 
-      const { data: assignmentsData, error: assignmentsError } = await supabase.from('task_assignments').select('id, user_id, task_id, assigned_date, due_date');
-      if (assignmentsError) throw assignmentsError;
+      // Fetch all assignments
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from('task_assignments')
+        .select('id, user_id, task_id, assigned_date, due_date');
+      
+      if (assignmentsError) {
+        console.error('Assignments error:', assignmentsError);
+        throw assignmentsError;
+      }
       setAssignments(assignmentsData || []);
+      console.log("Fetched assignments:", assignmentsData);
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -264,43 +288,63 @@ export default function AdminPage() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
+            {/* Current Assignments List View */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg"><Target size={20} className="text-emerald-400" /></div>
-                  <h2 className="text-xl font-semibold text-white">Current Assignments</h2>
-                </div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-emerald-500/10 rounded-lg"><Target size={20} className="text-emerald-400" /></div>
+                <h2 className="text-xl font-semibold text-white">Current Assignments</h2>
               </div>
-              <div className="space-y-4">
-                {assignments.length > 0 ? (
-                  assignments.map(assignment => (
-                    <div key={assignment.id} className="group bg-slate-800/80 hover:bg-slate-700/80 p-4 rounded-xl border border-slate-600/50 transition-all duration-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-medium text-white">{getUserName(assignment.user_id)}</h3>
-                            <span className="text-slate-400">→</span>
-                            <h3 className="font-medium text-white">{getTaskTitle(assignment.task_id)}</h3>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-slate-400">
-                            <div className="flex items-center gap-1"><Calendar size={12} /><span>Assigned: {new Date(assignment.assigned_date).toLocaleDateString()}</span></div>
-                            <div className="flex items-center gap-1"><Clock size={12} /><span>Due: {new Date(assignment.due_date).toLocaleDateString()}</span></div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleEditClick(assignment)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg transition-colors"><Edit3 size={14} /></button>
-                          <button onClick={() => handleDeleteAssignment(assignment.id)} className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-600 rounded-lg transition-colors"><Trash2 size={14} /></button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <Target size={48} className="mx-auto text-slate-600 mb-4" />
-                    <p className="text-slate-400 text-lg">No assignments yet</p>
-                    <p className="text-slate-500 text-sm">Create your first task assignment</p>
-                  </div>
-                )}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-700">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-2 text-left text-slate-300">Task Title</th>
+                      <th className="px-4 py-2 text-left text-slate-300">Assigned To</th>
+                      <th className="px-4 py-2 text-left text-slate-300">Deadline</th>
+                      <th className="px-4 py-2 text-left text-slate-300">Status</th>
+                      <th className="px-4 py-2 text-left text-slate-300">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {assignments.length > 0 ? (
+                      assignments.map(assignment => {
+                        const user = users.find(u => u.id === assignment.user_id);
+                        const task = tasks.find(t => t.id === assignment.task_id);
+
+                        // Add debugging logs
+                        console.log('Assignment:', assignment);
+                        console.log('Looking for user_id:', assignment.user_id);
+                        console.log('Looking for task_id:', assignment.task_id);
+                        console.log('Found user:', user);
+                        console.log('Found task:', task);
+                        console.log('All users:', users.map(u => u.id));
+                        console.log('All tasks:', tasks.map(t => t.id));
+                        console.log('---');
+
+                        return (
+                          <tr key={assignment.id} className="hover:bg-slate-700/50">
+                            <td className="px-4 py-2 text-white">{task?.title || 'Unknown Task'}</td>
+                            <td className="px-4 py-2 text-white">{user?.name || 'Unknown User'}</td>
+                            <td className="px-4 py-2 text-slate-300">{new Date(assignment.due_date).toLocaleDateString()}</td>
+                            <td className="px-4 py-2">
+                              <span className={`px-2 py-1 rounded ${task ? statusStyles[task.status] : ''}`}>
+                                {task?.status || 'N/A'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2">
+                              <button onClick={() => handleEditClick(assignment)} className="mr-2 text-blue-400 hover:text-white"><Edit3 size={16} /></button>
+                              <button onClick={() => handleDeleteAssignment(assignment.id)} className="text-rose-400 hover:text-white"><Trash2 size={16} /></button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="text-center py-6 text-slate-400">No assignments yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
