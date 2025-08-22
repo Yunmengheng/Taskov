@@ -199,7 +199,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteAssignmentOnly = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this assignment?")) {
+    if (!window.confirm("Are you sure you want to delete this assignment and remove the task from the user?")) {
       return;
     }
 
@@ -210,42 +210,41 @@ export default function AdminPage() {
         return;
       }
 
-      console.log("Deleting assignment only:", assignment);
-      console.log("Assignment ID:", id, "Type:", typeof id);
+      console.log("Deleting assignment and task:", assignment);
 
-      // Delete only the assignment with detailed response logging
-      const { data, error, status, statusText } = await supabase
+      // Step 1: Delete the assignment first
+      const { error: assignmentError } = await supabase
         .from('task_assignments')
         .delete()
-        .eq('id', id)
-        .select(); // This will return the deleted records
-    
-      console.log("Delete response:");
-      console.log("- Data:", data);
-      console.log("- Error:", error);
-      console.log("- Status:", status);
-      console.log("- StatusText:", statusText);
-
-      if (error) {
-        console.error("Assignment deletion error:", error);
-        throw error;
+        .eq('id', id);
+      
+      if (assignmentError) {
+        console.error("Assignment deletion error:", assignmentError);
+        throw assignmentError;
       }
 
-      if (!data || data.length === 0) {
-        console.warn("No records were deleted. This might indicate:");
-        console.warn("1. The assignment doesn't exist in the database");
-        console.warn("2. RLS policies are blocking the deletion");
-        console.warn("3. The user doesn't have proper permissions");
-        alert("No assignment was deleted. Check console for details.");
-        return;
+      console.log("Assignment deleted successfully");
+
+      // Step 2: Delete the associated task so it disappears from user's view
+      const { error: taskError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', assignment.task_id);
+      
+      if (taskError) {
+        console.error("Task deletion error:", taskError);
+        // Don't throw here since assignment is already deleted
+        console.warn("Assignment deleted but task removal failed");
+      } else {
+        console.log("Task deleted successfully");
+        // Update tasks state
+        setTasks(prev => prev.filter(t => t.id !== assignment.task_id));
       }
 
-      console.log("Assignment deleted successfully:", data);
-
-      // Update local state immediately
+      // Update assignments state
       setAssignments(prev => prev.filter(a => a.id !== id));
       
-      alert("Assignment deleted successfully!");
+      alert("Assignment and task deleted successfully!");
       
       // Refresh data to ensure consistency
       await fetchData();
