@@ -30,6 +30,10 @@ interface Task {
   description: string;
   priority: string;
   status: string;
+  user_id?: string; // Who owns/created the task
+  assigned_to?: string; // Who the task is assigned to
+  due_date?: string; // Due date
+  created_at?: string; // Creation timestamp
 }
 
 interface Assignment {
@@ -75,10 +79,10 @@ export default function AdminPage() {
       setUsers(usersData || []);
       console.log("Fetched users:", usersData);
 
-      // Fetch ALL tasks (remove any filters)
+      // Fetch ALL tasks (remove any filters) - include assigned_to field
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select('id, title, description, priority, status');
+        .select('id, title, description, priority, status, user_id, assigned_to, due_date, created_at');
       
       if (tasksError) {
         console.error('Tasks error:', tasksError);
@@ -117,22 +121,51 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch('/api/assign-task', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          userEmail, 
-          taskTitle, 
-          taskDeadline 
-        }),
-      });
+      // First, find the user by email
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', userEmail)
+        .single();
 
-      const result = await response.json();
+      if (userError || !userData) {
+        throw new Error('User not found with this email');
+      }
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Something went wrong');
+      // Create the task with all required fields including assigned_to
+      const { data: taskData, error: taskError } = await supabase
+        .from('tasks')
+        .insert({
+          title: taskTitle,
+          description: `Task assigned by admin to ${userEmail}`,
+          priority: 'medium', // Default priority
+          status: 'pending', // Default status
+          user_id: userData.id, // User who owns the task
+          assigned_to: userData.id, // Add this - who the task is assigned to
+          due_date: taskDeadline, // Store due date in tasks table
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (taskError) {
+        console.error('Task creation error:', taskError);
+        throw taskError;
+      }
+
+      // Create the assignment relationship
+      const { error: assignmentError } = await supabase
+        .from('task_assignments')
+        .insert({
+          user_id: userData.id,
+          task_id: taskData.id,
+          assigned_date: new Date().toISOString().split('T')[0],
+          due_date: taskDeadline
+        });
+
+      if (assignmentError) {
+        console.error('Assignment creation error:', assignmentError);
+        throw assignmentError;
       }
 
       alert('Task created and assigned successfully!');
@@ -140,6 +173,7 @@ export default function AdminPage() {
       setTaskTitle('');
       setTaskDeadline('');
       fetchData(); // Refresh all data
+
     } catch (error) {
       console.error("Error creating and assigning task:", error);
       alert(`Error: ${(error as Error).message}`);
