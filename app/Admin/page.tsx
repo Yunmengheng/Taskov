@@ -146,15 +146,113 @@ export default function AdminPage() {
     }
   };
 
+  // Replace your current delete function with this bulletproof version
   const handleDeleteAssignment = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this assignment?")) return;
+    const assignment = assignments.find(a => a.id === id);
+    if (!assignment) {
+      alert("Assignment not found");
+      return;
+    }
+
+    const deleteChoice = window.confirm(
+      "Choose deletion method:\n\nOK = Delete assignment only\nCancel = Delete assignment AND task"
+    );
 
     try {
-      const { error } = await supabase.from('task_assignments').delete().eq('id', id);
-      if (error) throw error;
+      if (deleteChoice) {
+        // Delete assignment only
+        const { error } = await supabase
+          .from('task_assignments')
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        
+        setAssignments(prev => prev.filter(a => a.id !== id));
+        alert("Assignment deleted successfully!");
+      } else {
+        // Delete all assignments for this task first, then delete the task
+        const { error: assignmentsError } = await supabase
+          .from('task_assignments')
+          .delete()
+          .eq('task_id', assignment.task_id);
+        
+        if (assignmentsError) throw assignmentsError;
+
+        const { error: taskError } = await supabase
+          .from('tasks')
+          .delete()
+          .eq('id', assignment.task_id);
+        
+        if (taskError) throw taskError;
+
+        setAssignments(prev => prev.filter(a => a.task_id !== assignment.task_id));
+        setTasks(prev => prev.filter(t => t.id !== assignment.task_id));
+        alert("Assignment and task deleted successfully!");
+      }
+      
+      await fetchData();
+    } catch (error) {
+      console.error("Error:", error);
+      alert(`Error: ${(error as Error).message}`);
+    }
+  };
+
+  const handleDeleteAssignmentOnly = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this assignment?")) {
+      return;
+    }
+
+    try {
+      const assignment = assignments.find(a => a.id === id);
+      if (!assignment) {
+        alert("Assignment not found");
+        return;
+      }
+
+      console.log("Deleting assignment only:", assignment);
+      console.log("Assignment ID:", id, "Type:", typeof id);
+
+      // Delete only the assignment with detailed response logging
+      const { data, error, status, statusText } = await supabase
+        .from('task_assignments')
+        .delete()
+        .eq('id', id)
+        .select(); // This will return the deleted records
+    
+      console.log("Delete response:");
+      console.log("- Data:", data);
+      console.log("- Error:", error);
+      console.log("- Status:", status);
+      console.log("- StatusText:", statusText);
+
+      if (error) {
+        console.error("Assignment deletion error:", error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.warn("No records were deleted. This might indicate:");
+        console.warn("1. The assignment doesn't exist in the database");
+        console.warn("2. RLS policies are blocking the deletion");
+        console.warn("3. The user doesn't have proper permissions");
+        alert("No assignment was deleted. Check console for details.");
+        return;
+      }
+
+      console.log("Assignment deleted successfully:", data);
+
+      // Update local state immediately
       setAssignments(prev => prev.filter(a => a.id !== id));
+      
+      alert("Assignment deleted successfully!");
+      
+      // Refresh data to ensure consistency
+      await fetchData();
+      
     } catch (error) {
       console.error("Error deleting assignment:", error);
+      alert(`Error: ${(error as Error).message}`);
     }
   };
 
@@ -332,8 +430,22 @@ export default function AdminPage() {
                               </span>
                             </td>
                             <td className="px-4 py-2">
-                              <button onClick={() => handleEditClick(assignment)} className="mr-2 text-blue-400 hover:text-white"><Edit3 size={16} /></button>
-                              <button onClick={() => handleDeleteAssignment(assignment.id)} className="text-rose-400 hover:text-white"><Trash2 size={16} /></button>
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  onClick={() => handleEditClick(assignment)} 
+                                  className="text-blue-400 hover:text-white"
+                                  title="Edit assignment"
+                                >
+                                  <Edit3 size={16} />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteAssignmentOnly(assignment.id)} 
+                                  className="text-rose-400 hover:text-white"
+                                  title="Delete assignment"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
