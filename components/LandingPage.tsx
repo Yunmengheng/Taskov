@@ -1,11 +1,22 @@
 "use client";
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRightIcon, BarChart3Icon, CalendarIcon, CheckSquareIcon, ChevronDown, ClockIcon, KanbanIcon, TagIcon } from 'lucide-react';
+import { ArrowRightIcon, BarChart3Icon, CalendarIcon, CheckSquareIcon, ChevronDown, ChevronLeft, ChevronRight, ClockIcon, KanbanIcon, TagIcon } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
   const heroRef = useRef<HTMLDivElement | null>(null);
   const featuresRef = useRef<HTMLDivElement | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Array of images for the carousel
+  const images = [
+    { src: "taskov.jpg", alt: "Task management notebooks and planning materials" },
+    { src: "/1.jpg", alt: "Team collaboration and project planning" },
+    { src: "/5.jpg", alt: "Digital workspace and productivity tools" },
+    { src: "/2.jpg", alt: "Calendar and scheduling interface" },
+    { src: "/4.jpg", alt: "Calendar and scheduling interface" }
+  ];
 
   // Auto-scroll from hero to features on initial downward scroll
   useEffect(() => {
@@ -39,8 +50,40 @@ const LandingPage: React.FC = () => {
     };
   }, []);
 
+  // Auto-advance images every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning) {
+        nextImage();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentImageIndex, isTransitioning]);
+
   const scrollToFeatures = () => {
     featuresRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const nextImage = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const prevImage = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const goToImage = (index: number) => {
+    if (isTransitioning || index === currentImageIndex) return;
+    setIsTransitioning(true);
+    setCurrentImageIndex(index);
+    setTimeout(() => setIsTransitioning(false), 500);
   };
 
   return (
@@ -94,13 +137,64 @@ const LandingPage: React.FC = () => {
                 {/* Background shadow element */}
                 <div className="absolute inset-0 bg-gray-800/50 rounded-xl transform rotate-3 blur-sm"></div>
                 {/* Main image container */}
-                <div className="relative z-10 rounded-xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden">
-                  <img 
-                    src="taskov.jpg" 
-                    alt="Task management notebooks and planning materials"
-                    className="w-full h-64 sm:h-80 md:h-96 object-cover rounded-xl"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
+                <div className="relative z-10 rounded-xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden group">
+                  {/* Image stack */}
+                  <div className="relative w-full h-64 sm:h-80 md:h-96">
+                    {images.map((image, index) => (
+                      <div
+                        key={index}
+                        className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+                          index === currentImageIndex
+                            ? 'opacity-100 translate-x-0 z-10'
+                            : index < currentImageIndex
+                            ? 'opacity-0 -translate-x-full z-0'
+                            : 'opacity-0 translate-x-full z-0'
+                        }`}
+                      >
+                        <img 
+                          src={image.src} 
+                          alt={image.alt}
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Navigation arrows */}
+                  <button
+                    onClick={prevImage}
+                    disabled={isTransitioning}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 disabled:cursor-not-allowed z-20"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    disabled={isTransitioning}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 disabled:cursor-not-allowed z-20"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+
+                  {/* Dot indicators */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToImage(index)}
+                        disabled={isTransitioning}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index === currentImageIndex
+                            ? 'bg-white scale-110'
+                            : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -115,6 +209,7 @@ const LandingPage: React.FC = () => {
         </button>
       </section>
 
+      {/* ...existing code for other sections... */}
       {/* Features Section */}
       <section ref={featuresRef} className="py-16 sm:py-20 scroll-mt-16 bg-gray-900" id="features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -197,9 +292,9 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {[
-              { name: 'Suon Vannputhika', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', image: '/puth.jpg' },
-              { name: 'B IC', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."', image: '/bdane.jpg' },
-              { name: 'Phan Nara', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."', image: '/phan.jpg' },
+              { name: 'Ley Chintey', title: 'Product Manager', quote: '"This task management tool has completely transformed how our team works. We\'re more organized and productive than ever before."', image: '/tey.jpg' },
+              { name: 'Sou Daroh', title: 'Freelance Developer', quote: '"As a freelancer juggling multiple projects, this platform keeps me on track. The Kanban board is a game-changer for visualizing my workflow."', image: '/daro.jpg' },
+              { name: 'Hour Seth Thavareak', title: 'Student', quote: '"I use this app to manage my coursework and assignments. The calendar view helps me plan ahead and never miss a deadline."', image: '/reak.jpg' },
             ].map((testimonial, index) => (
               <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <div className="flex items-center mb-4">
@@ -230,10 +325,10 @@ const LandingPage: React.FC = () => {
             Join thousands of users who have already transformed their productivity with our task management platform.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-            <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 shadow-lg w-full sm:w-auto">
+            <Link href="/Signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 shadow-lg w-full sm:w-auto">
               Sign Up Free
             </Link>
-            <Link href="/login" className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 w-full sm:w-auto">
+            <Link href="/Login" className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-medium py-3 px-8 rounded-lg transition-colors duration-300 w-full sm:w-auto">
               Sign In
             </Link>
           </div>
