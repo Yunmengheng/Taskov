@@ -81,10 +81,10 @@ const LandingPage: React.FC = () => {
                 prioritize, and complete your tasks with ease.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow-lg w-full sm:w-auto">
+                <Link href="/Signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow-lg w-full sm:w-auto">
                   Get Started Free
                 </Link>
-                <Link href="/login" className="border-2 border-gray-700 text-gray-300 hover:bg-gray-800 font-medium py-3 px-8 rounded-lg w-full sm:w-auto">
+                <Link href="/Login" className="border-2 border-gray-700 text-gray-300 hover:bg-gray-800 font-medium py-3 px-8 rounded-lg w-full sm:w-auto">
                   Sign In
                 </Link>
               </div>
