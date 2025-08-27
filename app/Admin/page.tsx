@@ -31,6 +31,7 @@ interface Task {
   status: string;
   user_id?: string; // Who owns/created the task
   assigned_to?: string; // Who the task is assigned to
+  assigned_by?: string; // Who assigned the task (admin)
   due_date?: string; // Due date
   created_at?: string; // Creation timestamp
 }
@@ -41,6 +42,7 @@ interface Assignment {
   task_id: string;
   assigned_date: string;
   due_date: string;
+  assigned_by?: string; // Who assigned this task
 }
 
 export default function AdminPage() {
@@ -49,6 +51,7 @@ export default function AdminPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
 
   // State for the new simplified form
   const [userEmail, setUserEmail] = useState('');
@@ -59,15 +62,21 @@ export default function AdminPage() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [editDueDate, setEditDueDate] = useState('');
 
-  // Initialize Supabase client
+  // Initialize Supabase client and get current admin
   useEffect(() => {
-    const initSupabase = () => {
+    const initSupabase = async () => {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
       if (supabaseUrl && supabaseKey) {
         const client = createClient(supabaseUrl, supabaseKey);
         setSupabase(client);
+        
+        // Get current user (admin)
+        const { data: { user } } = await client.auth.getUser();
+        if (user) {
+          setCurrentAdminId(user.id);
+        }
       }
     };
 
@@ -76,26 +85,15 @@ export default function AdminPage() {
 
   // Fetch data from Supabase
   const fetchData = useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase || !currentAdminId) return;
     
     setLoading(true);
     try {
-      // Fetch ALL users (remove any filters)
-      const { data: usersData, error: usersError } = await supabase
-        .from('profiles')
-        .select('id, name, email, role');
-      
-      if (usersError) {
-        console.error('Users error:', usersError);
-        throw usersError;
-      }
-      setUsers(usersData || []);
-      console.log("Fetched users:", usersData);
-
-      // Fetch ALL tasks (remove any filters) - include assigned_to field
+      // Fetch tasks created/assigned by current admin
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select('id, title, description, priority, status, user_id, assigned_to, due_date, created_at');
+        .select('id, title, description, priority, status, user_id, assigned_to, assigned_by, due_date, created_at')
+        .eq('assigned_by', currentAdminId);
       
       if (tasksError) {
         console.error('Tasks error:', tasksError);
@@ -104,10 +102,11 @@ export default function AdminPage() {
       setTasks(tasksData || []);
       console.log("Fetched tasks:", tasksData);
 
-      // Fetch all assignments
+      // Fetch assignments made by current admin
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('task_assignments')
-        .select('id, user_id, task_id, assigned_date, due_date');
+        .select('id, user_id, task_id, assigned_date, due_date, assigned_by')
+        .eq('assigned_by', currentAdminId);
       
       if (assignmentsError) {
         console.error('Assignments error:', assignmentsError);
@@ -116,25 +115,45 @@ export default function AdminPage() {
       setAssignments(assignmentsData || []);
       console.log("Fetched assignments:", assignmentsData);
 
+      // Get unique user IDs that this admin has assigned tasks to
+      const assignedUserIds = [...new Set(assignmentsData?.map(a => a.user_id) || [])];
+      
+      // Fetch only users that have been assigned tasks by this admin
+      if (assignedUserIds.length > 0) {
+        const { data: usersData, error: usersError } = await supabase
+          .from('profiles')
+          .select('id, name, email, role')
+          .in('id', assignedUserIds);
+        
+        if (usersError) {
+          console.error('Users error:', usersError);
+          throw usersError;
+        }
+        setUsers(usersData || []);
+        console.log("Fetched users assigned by this admin:", usersData);
+      } else {
+        setUsers([]);
+      }
+
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, currentAdminId]);
 
   useEffect(() => {
-    if (supabase) {
+    if (supabase && currentAdminId) {
       fetchData();
     }
-  }, [supabase, fetchData]);
+  }, [supabase, currentAdminId, fetchData]);
 
   const getUserName = (userId: string) => users.find(user => user.id === userId)?.name || 'Unknown';
   const getTaskTitle = (taskId: string) => tasks.find(task => task.id === taskId)?.title || 'Unknown';
 
   const handleCreateAndAssignTaskByEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userEmail || !taskTitle || !taskDeadline || !supabase) {
+    if (!userEmail || !taskTitle || !taskDeadline || !supabase || !currentAdminId) {
       alert("Please fill out all fields.");
       return;
     }
@@ -151,7 +170,7 @@ export default function AdminPage() {
         throw new Error('User not found with this email');
       }
 
-      // Create the task with all required fields including assigned_to
+      // Create the task with all required fields including assigned_by
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .insert({
@@ -160,7 +179,8 @@ export default function AdminPage() {
           priority: 'medium', // Default priority
           status: 'pending', // Default status
           user_id: userData.id, // User who owns the task
-          assigned_to: userData.id, // Add this - who the task is assigned to
+          assigned_to: userData.id, // Who the task is assigned to
+          assigned_by: currentAdminId, // Who assigned the task (current admin)
           due_date: taskDeadline, // Store due date in tasks table
           created_at: new Date().toISOString()
         })
@@ -172,14 +192,15 @@ export default function AdminPage() {
         throw taskError;
       }
 
-      // Create the assignment relationship
+      // Create the assignment relationship with assigned_by field
       const { error: assignmentError } = await supabase
         .from('task_assignments')
         .insert({
           user_id: userData.id,
           task_id: taskData.id,
           assigned_date: new Date().toISOString().split('T')[0],
-          due_date: taskDeadline
+          due_date: taskDeadline,
+          assigned_by: currentAdminId // Track who made this assignment
         });
 
       if (assignmentError) {
@@ -297,7 +318,7 @@ export default function AdminPage() {
     user: "bg-gray-500/10 text-gray-400 border border-gray-500/20",
   };
 
-  if (loading || !supabase) {
+  if (loading || !supabase || !currentAdminId) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-full"><p className="text-white">Loading...</p></div>
@@ -327,7 +348,7 @@ export default function AdminPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Total Users</p>
+                <p className="text-slate-400 text-sm">Assigned Users</p>
                 <p className="text-3xl font-bold text-white mt-1">{users.length}</p>
               </div>
               <div className="p-3 bg-blue-500/10 rounded-xl"><Users size={24} className="text-blue-400" /></div>
@@ -336,7 +357,7 @@ export default function AdminPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Active Tasks</p>
+                <p className="text-slate-400 text-sm">My Tasks</p>
                 <p className="text-3xl font-bold text-white mt-1">{tasks.length}</p>
               </div>
               <div className="p-3 bg-emerald-500/10 rounded-xl"><ClipboardList size={24} className="text-emerald-400" /></div>
@@ -345,7 +366,7 @@ export default function AdminPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Assignments</p>
+                <p className="text-slate-400 text-sm">My Assignments</p>
                 <p className="text-3xl font-bold text-white mt-1">{assignments.length}</p>
               </div>
               <div className="p-3 bg-amber-500/10 rounded-xl"><Target size={24} className="text-amber-400" /></div>
@@ -386,7 +407,7 @@ export default function AdminPage() {
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-500/10 rounded-lg"><Target size={20} className="text-emerald-400" /></div>
-                <h2 className="text-xl font-semibold text-white">Current Assignments</h2>
+                <h2 className="text-xl font-semibold text-white">My Assignments</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-700">
@@ -451,20 +472,26 @@ export default function AdminPage() {
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-blue-500/10 rounded-lg"><Users size={20} className="text-blue-400" /></div>
-                <h2 className="text-xl font-semibold text-white">Users</h2>
+                <h2 className="text-xl font-semibold text-white">My Assigned Users</h2>
               </div>
               <div className="space-y-3">
-                {users.map(user => (
-                  <div key={user.id} className="group bg-slate-800/80 hover:bg-slate-700/80 p-4 rounded-xl border border-slate-600/50 transition-all duration-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-white truncate">{user.name}</h3>
-                        <p className="text-sm text-slate-400 truncate">{user.email}</p>
+                {users.length > 0 ? (
+                  users.map(user => (
+                    <div key={user.id} className="group bg-slate-800/80 hover:bg-slate-700/80 p-4 rounded-xl border border-slate-600/50 transition-all duration-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-white truncate">{user.name}</h3>
+                          <p className="text-sm text-slate-400 truncate">{user.email}</p>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${roleStyles[user.role] || roleStyles.user}`}>{user.role}</span>
                       </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${roleStyles[user.role] || roleStyles.user}`}>{user.role}</span>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-slate-400">
+                    No users assigned yet. Start by creating and assigning tasks to users.
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

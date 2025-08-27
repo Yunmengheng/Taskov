@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Note:</strong> A new user account has been created and is ready to use. The user can login immediately with regular access. Approving this request will upgrade them to admin privileges.</p>
           
           <div style="margin: 20px 0;">
-            <a href="${confirmUrl}" style="background-color: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            <a href="${confirmUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Approve Admin Request
             </a>
           </div>
