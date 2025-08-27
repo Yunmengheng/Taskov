@@ -51,26 +51,7 @@ const Settings: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header with navigation */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-2">Settings</h1>
-            <div className="flex items-center space-x-4">
-              <Link href="/Dashboard" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Home size={16} className="mr-1" />
-                Dashboard
-              </Link>
-              <Link href="/calendar" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <Calendar size={16} className="mr-1" />
-                Calendar
-              </Link>
-              <Link href="/analytics" className="flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-                <BarChart3 size={16} className="mr-1" />
-                Analytics
-              </Link>
-            </div>
-          </div>
-        </div>
+        
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Settings */}

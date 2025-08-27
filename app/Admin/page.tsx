@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import {
   Users,
   Calendar,
@@ -49,6 +49,7 @@ export default function AdminPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [supabase, setSupabase] = useState<any>(null);
 
   // State for the new simplified form
   const [userEmail, setUserEmail] = useState('');
@@ -59,12 +60,31 @@ export default function AdminPage() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [editDueDate, setEditDueDate] = useState('');
 
-  // Fetch data from Supabase
+  // Initialize Supabase client
   useEffect(() => {
-    fetchData();
+    const initSupabase = () => {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (supabaseUrl && supabaseKey) {
+        const client = createClient(supabaseUrl, supabaseKey);
+        setSupabase(client);
+      }
+    };
+
+    initSupabase();
   }, []);
 
+  // Fetch data from Supabase
+  useEffect(() => {
+    if (supabase) {
+      fetchData();
+    }
+  }, [supabase]);
+
   const fetchData = async () => {
+    if (!supabase) return;
+    
     setLoading(true);
     try {
       // Fetch ALL users (remove any filters)
@@ -115,7 +135,7 @@ export default function AdminPage() {
 
   const handleCreateAndAssignTaskByEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userEmail || !taskTitle || !taskDeadline) {
+    if (!userEmail || !taskTitle || !taskDeadline || !supabase) {
       alert("Please fill out all fields.");
       return;
     }
@@ -182,6 +202,8 @@ export default function AdminPage() {
 
   // Replace your current delete function with this bulletproof version
   const handleDeleteAssignment = async (id: number) => {
+    if (!supabase) return;
+    
     const assignment = assignments.find(a => a.id === id);
     if (!assignment) {
       alert("Assignment not found");
@@ -233,6 +255,8 @@ export default function AdminPage() {
   };
 
   const handleDeleteAssignmentOnly = async (id: number) => {
+    if (!supabase) return;
+    
     if (!window.confirm("Are you sure you want to delete this assignment and remove the task from the user?")) {
       return;
     }
@@ -296,7 +320,7 @@ export default function AdminPage() {
 
   const handleUpdateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingAssignment) return;
+    if (!editingAssignment || !supabase) return;
 
     try {
       const { data, error } = await supabase
@@ -334,7 +358,7 @@ export default function AdminPage() {
     user: "bg-gray-500/10 text-gray-400 border border-gray-500/20",
   };
 
-  if (loading) {
+  if (loading || !supabase) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-full"><p className="text-white">Loading...</p></div>

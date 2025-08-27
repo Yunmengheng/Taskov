@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { MoonIcon, SunIcon, LockIcon, MailIcon, UserIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, LockIcon, MailIcon, UserIcon, Shield } from 'lucide-react';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
@@ -12,33 +12,60 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'facebook' | null>(null);
+  const [adminRequestLoading, setAdminRequestLoading] = useState(false);
 
-  // Fix: Use only the methods we actually need from AuthContext
   const { signUp } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
+  // Validation function
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError('Full name is required');
+      return false;
+    }
+    if (!email.trim()) {
+      setError('Email is required');
+      return false;
+    }
+    if (!password) {
+      setError('Password is required');
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+    return true;
+  };
+
+  // Regular signup (normal user)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
-    if (password !== confirmPassword) {
-      return setError('Passwords do not match');
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      // Fix: Use signUp instead of signup
       const { error: signUpError } = await signUp(email, password, name);
       if (signUpError) {
         setError(signUpError.message);
       } else {
-        // Check if user needs to verify email first
-        setError('Please check your email to verify your account before signing in.');
-        // Or redirect to login if email verification is not required
-        // router.push('/Login');
+        setSuccess('Account created successfully! Please check your email to verify your account.');
+        // Clear form
+        setName('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
       }
     } catch (err) {
       setError(`Failed to create an account: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -47,16 +74,55 @@ const Signup: React.FC = () => {
     }
   };
 
+  // Admin access request (creates account + admin request)
+  const handleAdminRequest = async () => {
+    setError('');
+    setSuccess('');
+
+    if (!validateForm()) return;
+
+    setAdminRequestLoading(true);
+
+    try {
+      const response = await fetch('/api/admin-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          name: name.trim(), 
+          password: password 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send admin request');
+      }
+
+      setSuccess('Account created successfully! Admin request sent for approval. You can login now with regular access while waiting for admin approval.');
+      
+      // Clear form
+      setName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+
+    } catch (error) {
+      setError(`Failed to send admin request: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setAdminRequestLoading(false);
+    }
+  };
+
   const handleGoogleSignup = async () => {
     setError('');
     setSocialLoading('google');
 
     try {
-      // Note: You need to implement these methods in AuthContext if they don't exist
-      // For now, commenting out since they're not in the AuthContext we created
-      // await loginWithGoogle();
       setError('Google signup not implemented yet');
-      // router.push('/Dashboard');
     } catch (err) {
       setError(`Failed to sign up with Google: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
@@ -69,11 +135,7 @@ const Signup: React.FC = () => {
     setSocialLoading('facebook');
 
     try {
-      // Note: You need to implement these methods in AuthContext if they don't exist
-      // For now, commenting out since they're not in the AuthContext we created
-      // await loginWithFacebook();
       setError('Facebook signup not implemented yet');
-      // router.push('/Dashboard');
     } catch (err) {
       setError(`Failed to sign up with Facebook: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
@@ -95,15 +157,28 @@ const Signup: React.FC = () => {
             </Link>
           </p>
         </div>
+        
         <div className="absolute top-4 right-4">
           <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
             {theme === 'dark' ? <SunIcon className="h-5 w-5 text-gray-400" /> : <MoonIcon className="h-5 w-5 text-gray-600" />}
           </button>
         </div>
-        <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-md">
+
+        {/* Success Message */}
+        {success && (
+          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 p-4 rounded-md">
+            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-4 rounded-md">
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          </div>}
+          </div>
+        )}
+
+        <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -118,6 +193,7 @@ const Signup: React.FC = () => {
                 onChange={e => setName(e.target.value)}
                 className="appearance-none rounded-t-md relative block w-full px-10 py-3 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
                 placeholder="Full name"
+                disabled={isLoading || adminRequestLoading}
               />
             </div>
             <div className="relative">
@@ -134,6 +210,7 @@ const Signup: React.FC = () => {
                 onChange={e => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-10 py-3 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
                 placeholder="Email address"
+                disabled={isLoading || adminRequestLoading}
               />
             </div>
             <div className="relative">
@@ -149,7 +226,9 @@ const Signup: React.FC = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="appearance-none relative block w-full px-10 py-3 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
-                placeholder="Password"
+                placeholder="Password (min 6 characters)"
+                disabled={isLoading || adminRequestLoading}
+                minLength={6}
               />
             </div>
             <div className="relative">
@@ -166,19 +245,36 @@ const Signup: React.FC = () => {
                 onChange={e => setConfirmPassword(e.target.value)}
                 className="appearance-none rounded-b-md relative block w-full px-10 py-3 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
                 placeholder="Confirm password"
+                disabled={isLoading || adminRequestLoading}
+                minLength={6}
               />
             </div>
           </div>
+
+          {/* Regular Signup Button */}
           <div>
             <button
               type="submit"
-              disabled={isLoading || socialLoading !== null}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70"
+              disabled={isLoading || adminRequestLoading || socialLoading !== null}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Creating account...' : 'Sign up with email'}
             </button>
           </div>
         </form>
+        {/* Admin Request Button */}
+        <div>
+          <button
+            type="button"
+            onClick={handleAdminRequest}
+            disabled={adminRequestLoading || isLoading || socialLoading !== null}
+            className="group relative w-full flex justify-center items-center py-3 px-4 border border-purple-300 dark:border-purple-600 text-sm font-medium rounded-md text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Shield className="h-5 w-5 mr-2" />
+            {adminRequestLoading ? 'Creating Account & Sending Request...' : 'Request Admin Access'}
+          </button>
+        </div>
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
@@ -189,6 +285,7 @@ const Signup: React.FC = () => {
             </span>
           </div>
         </div>
+
         {/* Social Signup Buttons - Temporarily disabled */}
         <div className="space-y-3">
           <button
