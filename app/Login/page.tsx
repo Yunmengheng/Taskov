@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MoonIcon, SunIcon, LockIcon, MailIcon } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -15,81 +16,90 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'facebook' | 'guest' | null>(null);
 
-  // Fix: Use the correct method names from AuthContext
   const { signIn } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const supabase = createClientComponentClient();
 
+  // Email/password login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
-    console.log('🔍 Attempting login with:', { email, password: password ? '***' : 'empty' });
-    console.log('🔍 Auth context available:', !!signIn);
 
     try {
       const { error: loginError } = await signIn(email, password);
       if (loginError) {
         setError(loginError.message);
       } else {
-        console.log('✅ Login successful, redirecting to Dashboard...');
         router.push('/Dashboard');
       }
     } catch (err) {
-      console.error('❌ Login error:', err);
-      setError(`Failed to sign in: ${err instanceof Error ? err.message : 'Please check your credentials.'}`);
+      console.error('Login error:', err);
+      setError(`Failed to sign in: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Google login
   const handleGoogleLogin = async () => {
     setError('');
     setSocialLoading('google');
 
-    console.log('🔍 Attempting Google login...');
-
     try {
-      // Google login not implemented yet
-      setError('Google login not implemented yet');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/Dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+      if (error) throw error;
     } catch (err) {
-      console.error('❌ Google login error:', err);
+      console.error('Google login error:', err);
       setError(`Failed to sign in with Google: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
       setSocialLoading(null);
     }
   };
 
+  // Facebook login
   const handleFacebookLogin = async () => {
     setError('');
     setSocialLoading('facebook');
 
-    console.log('🔍 Attempting Facebook login...');
-
     try {
-      // Facebook login not implemented yet
-      setError('Facebook login not implemented yet');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/Dashboard`,
+        }
+      });
+      if (error) throw error;
     } catch (err) {
-      console.error('❌ Facebook login error:', err);
+      console.error('Facebook login error:', err);
       setError(`Failed to sign in with Facebook: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
       setSocialLoading(null);
     }
   };
 
+  // Guest login
   const handleGuestLogin = async () => {
     setError('');
     setSocialLoading('guest');
 
-    console.log('🔍 Attempting guest login...');
-
     try {
-      // Guest login not implemented yet
-      setError('Guest login not implemented yet');
+      // ⚠️ Supabase doesn't support anonymous login out-of-the-box
+      // You can simulate guest login or use your own logic
+      const { error } = await supabase.auth.signInAnonymously?.(); 
+      if (error) throw error;
+
+      router.push('/Dashboard');
     } catch (err) {
-      console.error('❌ Guest login error:', err);
-      setError(`Failed to sign in as guest: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
+      console.error('Guest login error:', err);
+      setError(`Failed to sign in as guest: ${err instanceof Error ? err.message : 'Guest login not available'}`);
       setSocialLoading(null);
     }
   };
@@ -109,6 +119,7 @@ const Login: React.FC = () => {
           </p>
         </div>
 
+        {/* Theme Toggle */}
         <div className="absolute top-4 right-4">
           <button
             onClick={toggleTheme}
@@ -188,12 +199,13 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Social Login Buttons - Temporarily disabled */}
+        {/* Social Login Buttons */}
         <div className="space-y-3">
+          {/* Google */}
           <button
             type="button"
             onClick={handleGoogleLogin}
-            disabled={true} // Disabled until implemented
+            disabled={isLoading || socialLoading !== null}
             className="group relative w-full flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -204,13 +216,14 @@ const Login: React.FC = () => {
                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
             </span>
-            Coming Soon - Google
+            {socialLoading === 'google' ? 'Signing in with Google...' : 'Sign in with Google'}
           </button>
 
+          {/* Facebook */}
           <button
             type="button"
             onClick={handleFacebookLogin}
-            disabled={true} // Disabled until implemented
+            disabled={isLoading || socialLoading !== null}
             className="group relative w-full flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -218,13 +231,14 @@ const Login: React.FC = () => {
                 <path fill="currentColor" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z" />
               </svg>
             </span>
-            Coming Soon - Facebook
+            {socialLoading === 'facebook' ? 'Signing in with Facebook...' : 'Sign in with Facebook'}
           </button>
 
+          {/* Guest */}
           <button
             type="button"
             onClick={handleGuestLogin}
-            disabled={true} // Disabled until implemented
+            disabled={isLoading || socialLoading !== null}
             className="group relative w-full flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -233,7 +247,7 @@ const Login: React.FC = () => {
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </span>
-            Coming Soon - Guest
+            {socialLoading === 'guest' ? 'Signing in as guest...' : 'Continue as Guest'}
           </button>
         </div>
       </div>

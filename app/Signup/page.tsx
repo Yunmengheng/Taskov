@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MoonIcon, SunIcon, LockIcon, MailIcon, UserIcon, Shield } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
@@ -19,6 +20,7 @@ const Signup: React.FC = () => {
 
   const { signUp } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const supabase = createClientComponentClient();
 
   // Validation function
   const validateForm = () => {
@@ -122,10 +124,25 @@ const Signup: React.FC = () => {
     setSocialLoading('google');
 
     try {
-      setError('Google signup not implemented yet');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/Dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      // The redirect will happen automatically
     } catch (err) {
+      console.error('Google signup error:', err);
       setError(`Failed to sign up with Google: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
       setSocialLoading(null);
     }
   };
@@ -135,10 +152,21 @@ const Signup: React.FC = () => {
     setSocialLoading('facebook');
 
     try {
-      setError('Facebook signup not implemented yet');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/Dashboard`,
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      // The redirect will happen automatically
     } catch (err) {
+      console.error('Facebook signup error:', err);
       setError(`Failed to sign up with Facebook: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
       setSocialLoading(null);
     }
   };
@@ -286,12 +314,12 @@ const Signup: React.FC = () => {
           </div>
         </div>
 
-        {/* Social Signup Buttons - Temporarily disabled */}
+        {/* Social Signup Buttons */}
         <div className="space-y-3">
           <button
             type="button"
             onClick={handleGoogleSignup}
-            disabled={true} // Disabled until implemented
+            disabled={isLoading || adminRequestLoading || socialLoading !== null}
             className="group relative w-full flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -302,12 +330,12 @@ const Signup: React.FC = () => {
                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
             </span>
-            Coming Soon - Google
+            {socialLoading === 'google' ? 'Signing up with Google...' : 'Sign up with Google'}
           </button>
           <button
             type="button"
             onClick={handleFacebookSignup}
-            disabled={true} // Disabled until implemented
+            disabled={isLoading || adminRequestLoading || socialLoading !== null}
             className="group relative w-full flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -315,7 +343,7 @@ const Signup: React.FC = () => {
                 <path fill="currentColor" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z" />
               </svg>
             </span>
-            Coming Soon - Facebook
+            {socialLoading === 'facebook' ? 'Signing up with Facebook...' : 'Sign up with Facebook'}
           </button>
         </div>
       </div>
