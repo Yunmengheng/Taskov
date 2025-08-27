@@ -14,10 +14,6 @@ const Header: React.FC<HeaderProps> = ({ title = "Task Manager" }) => {
         <h1 className="text-xl font-semibold text-white">{title}</h1>
         
         <div className="flex items-center space-x-4">
-          {/* Theme toggle */}
-          <button className="p-2 rounded-lg hover:bg-slate-700 transition-colors">
-            <Sun size={18} className="text-gray-400" />
-          </button>
           
           {/* User profile */}
           <div className="flex items-center space-x-2">
