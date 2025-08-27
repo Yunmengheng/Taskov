@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   Users,
   Calendar,
@@ -10,7 +10,6 @@ import {
   Shield,
   ClipboardList,
   Target,
-  Clock,
   Trash2,
   Edit3,
   X
@@ -49,7 +48,7 @@ export default function AdminPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [supabase, setSupabase] = useState<any>(null);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   // State for the new simplified form
   const [userEmail, setUserEmail] = useState('');
@@ -76,13 +75,7 @@ export default function AdminPage() {
   }, []);
 
   // Fetch data from Supabase
-  useEffect(() => {
-    if (supabase) {
-      fetchData();
-    }
-  }, [supabase]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!supabase) return;
     
     setLoading(true);
@@ -128,7 +121,13 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (supabase) {
+      fetchData();
+    }
+  }, [supabase, fetchData]);
 
   const getUserName = (userId: string) => users.find(user => user.id === userId)?.name || 'Unknown';
   const getTaskTitle = (taskId: string) => tasks.find(task => task.id === taskId)?.title || 'Unknown';
@@ -196,60 +195,6 @@ export default function AdminPage() {
 
     } catch (error) {
       console.error("Error creating and assigning task:", error);
-      alert(`Error: ${(error as Error).message}`);
-    }
-  };
-
-  // Replace your current delete function with this bulletproof version
-  const handleDeleteAssignment = async (id: number) => {
-    if (!supabase) return;
-    
-    const assignment = assignments.find(a => a.id === id);
-    if (!assignment) {
-      alert("Assignment not found");
-      return;
-    }
-
-    const deleteChoice = window.confirm(
-      "Choose deletion method:\n\nOK = Delete assignment only\nCancel = Delete assignment AND task"
-    );
-
-    try {
-      if (deleteChoice) {
-        // Delete assignment only
-        const { error } = await supabase
-          .from('task_assignments')
-          .delete()
-          .eq('id', id);
-        
-        if (error) throw error;
-        
-        setAssignments(prev => prev.filter(a => a.id !== id));
-        alert("Assignment deleted successfully!");
-      } else {
-        // Delete all assignments for this task first, then delete the task
-        const { error: assignmentsError } = await supabase
-          .from('task_assignments')
-          .delete()
-          .eq('task_id', assignment.task_id);
-        
-        if (assignmentsError) throw assignmentsError;
-
-        const { error: taskError } = await supabase
-          .from('tasks')
-          .delete()
-          .eq('id', assignment.task_id);
-        
-        if (taskError) throw taskError;
-
-        setAssignments(prev => prev.filter(a => a.task_id !== assignment.task_id));
-        setTasks(prev => prev.filter(t => t.id !== assignment.task_id));
-        alert("Assignment and task deleted successfully!");
-      }
-      
-      await fetchData();
-    } catch (error) {
-      console.error("Error:", error);
       alert(`Error: ${(error as Error).message}`);
     }
   };
@@ -337,12 +282,6 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error updating assignment:", error);
     }
-  };
-
-  const priorityStyles: { [key: string]: string } = {
-    low: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-    medium: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-    high: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
   };
 
   const statusStyles: { [key: string]: string } = {
@@ -465,16 +404,6 @@ export default function AdminPage() {
                       assignments.map(assignment => {
                         const user = users.find(u => u.id === assignment.user_id);
                         const task = tasks.find(t => t.id === assignment.task_id);
-
-                        // Add debugging logs
-                        console.log('Assignment:', assignment);
-                        console.log('Looking for user_id:', assignment.user_id);
-                        console.log('Looking for task_id:', assignment.task_id);
-                        console.log('Found user:', user);
-                        console.log('Found task:', task);
-                        console.log('All users:', users.map(u => u.id));
-                        console.log('All tasks:', tasks.map(t => t.id));
-                        console.log('---');
 
                         return (
                           <tr key={assignment.id} className="hover:bg-slate-700/50">

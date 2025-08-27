@@ -1,206 +1,199 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  Palette,
-  Home,
-  Calendar,
-  BarChart3,
-  Moon,
-  Sun,
-  Eye,
-} from "lucide-react";
+import { User, Settings, Lock, Shield, Check, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-const Settings: React.FC = () => {
-  const { user, signOut } = useAuth();
+export default function SettingsPage() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Static display data - no state management needed
-  const displaySettings = {
-    notifications: {
-      email: true,
-      push: false,
-      taskReminders: true,
-      weeklyReports: false
-    },
-    appearance: {
-      theme: 'dark',
-      compactMode: false,
-      showCompleted: true
-    },
-    privacy: {
-      profileVisible: true,
-      shareAnalytics: false
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
     }
+  }, [user]);
+
+  const handleProfileUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement profile update logic
+    console.log("Updating profile:", { name, email });
   };
 
-  const displayProfile = {
-    name: user?.email?.split('@')[0] || 'User',
-    email: user?.email || 'user@example.com'
-  };
-
-  const handleSignOut = () => {
-    signOut();
+  const handlePasswordUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+    // TODO: Implement password update logic
+    console.log("Updating password");
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <Settings className="h-8 w-8 text-blue-400" />
+          <h1 className="text-3xl font-bold text-white">Settings</h1>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Settings */}
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* Profile Information - Display Only */}
-            <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-              <div className="flex items-center mb-6">
-                <User size={20} className="text-blue-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Profile Information</h3>
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-slate-800/50 rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab("profile")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+              activeTab === "profile"
+                ? "bg-blue-600 text-white"
+                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+            }`}
+          >
+            <User className="h-4 w-4" />
+            Profile
+          </button>
+          <button
+            onClick={() => setActiveTab("security")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+              activeTab === "security"
+                ? "bg-blue-600 text-white"
+                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+            }`}
+          >
+            <Lock className="h-4 w-4" />
+            Security
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          {activeTab === "profile" && (
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <User className="h-6 w-6 text-blue-400" />
+                <h2 className="text-xl font-semibold text-white">
+                  Profile Settings
+                </h2>
               </div>
-              
-              <div className="space-y-4">
+              <form onSubmit={handleProfileUpdate} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                  <div className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-300">
-                    {displayProfile.name}
-                  </div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter your full name"
+                  />
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                  <div className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-300">
-                    {displayProfile.email}
-                  </div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter your email address"
+                  />
                 </div>
-              </div>
+                {user?.role === "admin" && (
+                  <div className="flex items-center gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                    <Shield className="h-5 w-5 text-purple-400" />
+                    <span className="text-sm text-purple-300">
+                      Administrator Account
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                  >
+                    <Check className="h-4 w-4" />
+                    Update Profile
+                  </button>
+                </div>
+              </form>
             </div>
+          )}
 
-            {/* Password Change - Display Only */}
-            <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-              <div className="flex items-center mb-6">
-                <Shield size={20} className="text-green-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Password Settings</h3>
+          {activeTab === "security" && (
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <Lock className="h-6 w-6 text-blue-400" />
+                <h2 className="text-xl font-semibold text-white">
+                  Security Settings
+                </h2>
               </div>
-              
-              <div className="space-y-4">
-                <div className="text-gray-300">
-                  <p className="text-sm">Password was last changed 30 days ago</p>
-                  <p className="text-xs text-gray-400 mt-1">For security, we recommend changing your password regularly</p>
+              <form onSubmit={handlePasswordUpdate} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter current password"
+                  />
                 </div>
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter new password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                  >
+                    <Check className="h-4 w-4" />
+                    Update Password
+                  </button>
+                </div>
+              </form>
             </div>
-
-            {/* Notifications - Display Only */}
-            <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-              <div className="flex items-center mb-6">
-                <Bell size={20} className="text-yellow-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Notifications</h3>
-              </div>
-              
-              <div className="space-y-4">
-                {Object.entries(displaySettings.notifications).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-gray-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                    <div className={`w-11 h-6 rounded-full flex items-center ${value ? 'bg-blue-600' : 'bg-slate-600'}`}>
-                      <div className={`w-5 h-5 bg-white rounded-full transition-transform ${value ? 'translate-x-5' : 'translate-x-1'}`}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            
-            {/* Appearance - Display Only */}
-            <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-              <div className="flex items-center mb-6">
-                <Palette size={20} className="text-purple-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Appearance</h3>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Theme</span>
-                  <div className="flex items-center space-x-2">
-                    <Sun size={16} className="text-gray-400" />
-                    <div className="w-11 h-6 bg-blue-600 rounded-full flex items-center">
-                      <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
-                    </div>
-                    <Moon size={16} className="text-blue-400" />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Compact Mode</span>
-                  <div className="w-11 h-6 bg-slate-600 rounded-full flex items-center">
-                    <div className="w-5 h-5 bg-white rounded-full translate-x-1"></div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Show Completed</span>
-                  <div className="w-11 h-6 bg-blue-600 rounded-full flex items-center">
-                    <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Privacy - Display Only */}
-            <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-              <div className="flex items-center mb-6">
-                <Eye size={20} className="text-orange-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Privacy</h3>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Profile Visible</span>
-                  <div className="w-11 h-6 bg-blue-600 rounded-full flex items-center">
-                    <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Share Analytics</span>
-                  <div className="w-11 h-6 bg-slate-600 rounded-full flex items-center">
-                    <div className="w-5 h-5 bg-white rounded-full translate-x-1"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Account Actions */}
-            <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Account Actions</h3>
-              <div className="space-y-3">
-                <button 
-                  disabled 
-                  className="w-full px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
-                >
-                  Export Data (Coming Soon)
-                </button>
-                <button 
-                  onClick={handleSignOut}
-                  className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
   );
-};
-
-export default Settings;
+}
