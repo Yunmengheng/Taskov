@@ -12,10 +12,10 @@ const LandingPage: React.FC = () => {
   // Array of images for the carousel
   const images = [
     { src: "taskov.jpg", alt: "Task management notebooks and planning materials" },
-    { src: "/1.jpg", alt: "Team collaboration and project planning" },
-    { src: "/5.jpg", alt: "Digital workspace and productivity tools" },
-    { src: "/2.jpg", alt: "Calendar and scheduling interface" },
-    { src: "/4.jpg", alt: "Calendar and scheduling interface" }
+    { src: "/dash.png", alt: "Team collaboration and project planning" },
+    { src: "/drag.png", alt: "Digital workspace and productivity tools" },
+    { src: "/calendar.png", alt: "Calendar and scheduling interface" },
+    { src: "/ana.png", alt: "Calendar and scheduling interface" }
   ];
 
   // Auto-scroll from hero to features on initial downward scroll
