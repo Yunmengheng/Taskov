@@ -159,7 +159,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask }) => {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-6 h-full overflow-x-auto">
           {columns.map((column) => (
-            <div key={column.id} className="flex-1 min-w-[320px] bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50">
+            <div key={column.id} className="flex-1 min-w-[320px] bg-slate-800/50 rounded-2xl border border-slate-700/50">
               {/* Column Header */}
               <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
                 <div className="flex items-center gap-3">
@@ -191,8 +191,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask }) => {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`bg-slate-800/80 rounded-xl p-4 cursor-grab active:cursor-grabbing transition-all duration-200 hover:bg-slate-700/80 group border border-slate-600/50 ${
-                                snapshot.isDragging ? "shadow-2xl rotate-2 scale-105 z-50 ring-2 ring-blue-500/50" : ""
+                              className={`bg-slate-800/80 rounded-xl p-4 cursor-grab active:cursor-grabbing transition-colors duration-200 hover:bg-slate-700/80 group border border-slate-600/50 ${
+                                snapshot.isDragging ? "shadow-2xl z-50 ring-2 ring-blue-500/50" : ""
                               } ${
                                 task.priority === "high" ? "border-l-4 border-rose-500" :
                                 task.priority === "medium" ? "border-l-4 border-amber-500" :
