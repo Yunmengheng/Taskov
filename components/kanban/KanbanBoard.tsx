@@ -13,7 +13,11 @@ interface KanbanColumn {
   count: number;
 }
 
-const KanbanBoard: React.FC = () => {
+interface KanbanBoardProps {
+  onEditTask: (task: Task) => void;
+}
+
+const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask }) => {
   const { tasks, updateTask, deleteTask } = useTask();
 
   // Debug: log all tasks to see their current state
@@ -204,7 +208,13 @@ const KanbanBoard: React.FC = () => {
                                   {task.title}
                                 </h4>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button className="text-slate-400 hover:text-white p-1.5 hover:bg-slate-600 rounded-lg transition-colors">
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onEditTask(task);
+                                    }}
+                                    className="text-slate-400 hover:text-white p-1.5 hover:bg-slate-600 rounded-lg transition-colors"
+                                  >
                                     <Edit size={14} />
                                   </button>
                                   <button 

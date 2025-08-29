@@ -5,12 +5,20 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import KanbanBoard from '@/components/kanban/KanbanBoard';
 import TaskForm from '@/components/tasks/TaskForm';
 import { PlusIcon } from 'lucide-react';
+import { Task } from '@/contexts/TaskContext';
 
 const KanbanView: React.FC = () => {
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const closeForm = () => {
     setShowTaskForm(false);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
   };
 
   return (
@@ -34,12 +42,12 @@ const KanbanView: React.FC = () => {
           </button>
         </div>
         <div className="flex-1">
-          <KanbanBoard />
+          <KanbanBoard onEditTask={handleEditTask} />
         </div>
       </div>
 
       {/* Task Form Modal */}
-      {showTaskForm && <TaskForm onClose={closeForm} editTask={null} />}
+      {showTaskForm && <TaskForm onClose={closeForm} editTask={editingTask} />}
     </DashboardLayout>
   );
 };
